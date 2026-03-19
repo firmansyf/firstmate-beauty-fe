@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alfath Skin - Frontend
+
+E-commerce frontend for **Alfath Skin**, a skincare product marketplace built with Next.js 15 and React 19.
+
+## Tech Stack
+
+- **Framework**: Next.js 15.5.6 (App Router + Turbopack)
+- **Language**: TypeScript 5
+- **UI**: React 19.1.0
+- **Styling**: Tailwind CSS 4
+- **State Management**: Zustand 4.4.7
+- **HTTP Client**: Axios 1.6.2
+- **Animations**: Framer Motion 11.15.0
+- **Icons**: Lucide React 0.554.0
+- **Notifications**: React Hot Toast 2.4.1
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/              # Login, Register, OTP Verification
+│   ├── (customer)/          # Homepage, Products, Cart, Checkout, Orders, Profile, Refunds
+│   └── admin/               # Dashboard, Product/Category/Banner/Order/Refund/User Management
+├── components/
+│   ├── common/              # Navbar, Footer, Button, Input, Card, Modal, Loader
+│   ├── customer/            # ProductCard, CartItem, BannerSlider, OrderCard
+│   ├── admin/               # Sidebar
+│   └── providers/           # AuthProvider
+├── hooks/
+│   └── useAuthCheck.ts      # Auth token validation & auto-logout
+├── lib/
+│   ├── api.ts               # Axios client with interceptors & API services
+│   └── utils.ts             # Helpers (formatCurrency, status colors, etc.)
+└── store/
+    ├── authStore.ts          # Auth state (login, logout, token, user)
+    └── cartStore.ts          # Cart state (items, totals, add/remove)
+```
+
+## Features
+
+### Customer
+- User registration with OTP email verification
+- Product browsing with search, category filter, sort, and pagination
+- Shopping cart with quantity management and item notes
+- Checkout with shipping address and WhatsApp contact
+- Order tracking with status updates
+- QRIS payment with 24-hour deadline
+- Refund requests for delivered orders
+- User profile
+
+### Admin
+- Dashboard with revenue metrics, order stats, top products, low-stock alerts
+- Product CRUD (images, pricing, stock, featured flag)
+- Category management
+- Banner management with scheduling
+- Order management with status updates and payment verification
+- Refund processing (approve/reject/complete with transfer proof)
+- QRIS payment configuration
+- User management
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- Backend API running (default: `http://localhost:5000`)
+
+### Installation
+
+```bash
+cd frontend
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App runs at [http://localhost:3100](http://localhost:3100).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This Next.js app can be deployed to [Vercel](https://vercel.com) or any Node.js hosting platform. Make sure to set the `NEXT_PUBLIC_API_URL` environment variable pointing to your backend API.
