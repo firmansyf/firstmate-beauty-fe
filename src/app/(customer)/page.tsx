@@ -20,8 +20,8 @@ const containerVariants = {
 };
 
 export default function HomePage() {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [banners, setBanners] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
