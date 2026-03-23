@@ -2,12 +2,12 @@
 'use client';
 
 import Loader from '@/components/common/Loader';
-import { ordersAPI } from '@/lib/api';
+import { ordersAPI, paymentAPI } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Check, Loader2, QrCode } from 'lucide-react';
+import { ChevronLeft, Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
@@ -105,10 +105,30 @@ export default function CheckoutPage() {
       });
 
       const orderId = response.data.data.id;
-
-      toast.success('Pesanan berhasil dibuat');
       await clearCart();
-      router.push(`/orders/${orderId}`);
+
+      // Get Midtrans Snap token and open payment popup
+      const tokenResponse = await paymentAPI.createSnapToken(orderId);
+      const snapToken = tokenResponse.data.data.snap_token;
+
+      window.snap.pay(snapToken, {
+        onSuccess: () => {
+          toast.success('Pembayaran berhasil!');
+          router.push(`/orders/${orderId}`);
+        },
+        onPending: () => {
+          toast('Pembayaran pending, cek status pesanan Anda', { icon: '⏳' });
+          router.push(`/orders/${orderId}`);
+        },
+        onError: () => {
+          toast.error('Pembayaran gagal, silakan coba lagi');
+          router.push(`/orders/${orderId}`);
+        },
+        onClose: () => {
+          toast('Pembayaran dibatalkan', { icon: 'ℹ️' });
+          router.push(`/orders/${orderId}`);
+        },
+      });
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Gagal membuat pesanan');
     } finally {
@@ -367,29 +387,6 @@ export default function CheckoutPage() {
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-semibold text-pink-600">{formatCurrency(total)}</span>
                     </motion.div>
-                  </div>
-                </motion.div>
-
-                {/* Payment Info */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.65 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-pink-50 rounded-lg border border-pink-100 p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                      <QrCode className="w-5 h-5 text-pink-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-pink-800">
-                        Pembayaran via QRIS
-                      </p>
-                      <p className="text-xs text-pink-600 mt-0.5">
-                        Scan QR code setelah pesanan dibuat
-                      </p>
-                    </div>
                   </div>
                 </motion.div>
 

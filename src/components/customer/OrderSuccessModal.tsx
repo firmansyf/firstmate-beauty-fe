@@ -1,27 +1,14 @@
 'use client';
 
 import Modal from '@/components/common/Modal';
-import PaymentInstructions from '@/components/customer/PaymentInstructions';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight } from 'lucide-react';
-
-interface PaymentInfo {
-  method: string;
-  merchant_name: string;
-  qris_image_url: string;
-  instructions: string[];
-  total_amount: number;
-  order_number: string;
-  deadline: string;
-  expiration_hours: number;
-}
 
 interface OrderData {
   id: number;
   order_number: string;
   total: number;
   created_at: string;
-  payment_info?: PaymentInfo;
 }
 
 interface OrderSuccessModalProps {
@@ -78,32 +65,25 @@ export default function OrderSuccessModal({
           transition={{ delay: 0.3 }}
           className="text-sm text-gray-500 mt-1"
         >
-          Silakan selesaikan pembayaran Anda
+          Nomor pesanan: <span className="font-medium text-gray-900">#{orderData.order_number}</span>
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-sm text-gray-500 mt-2"
+        >
+          Silakan selesaikan pembayaran melalui halaman detail pesanan.
         </motion.p>
       </div>
-
-      {/* Payment Instructions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
-        <PaymentInstructions
-          total={orderData.payment_info?.total_amount || orderData.total}
-          orderNumber={orderData.payment_info?.order_number || orderData.order_number}
-          createdAt={orderData.created_at}
-          qrisImageUrl={orderData.payment_info?.qris_image_url}
-          instructions={orderData.payment_info?.instructions}
-          expirationHours={orderData.payment_info?.expiration_hours || 24}
-        />
-      </motion.div>
 
       {/* Action Button */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mt-6"
+        className="mt-4"
       >
         <button
           onClick={handleViewOrder}

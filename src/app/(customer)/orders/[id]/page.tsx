@@ -3,8 +3,7 @@
 
 import Card from '@/components/common/Card';
 import Loader from '@/components/common/Loader';
-import PaymentInstructions from '@/components/customer/PaymentInstructions';
-import { ordersAPI, refundsAPI } from '@/lib/api';
+import { ordersAPI, refundsAPI, paymentAPI } from '@/lib/api';
 import {
   formatCurrency,
   formatDateTime,
@@ -64,6 +63,7 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [ewalletPhone, setEwalletPhone] = useState('');
@@ -109,8 +109,39 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
     }
   };
 
+  const canPay = order?.status === 'pending' && order?.payment_status === 'pending';
   const canCancel = order?.status === 'pending' && order?.payment_status === 'pending';
   const canRequestRefund = order?.status === 'shipped' && order?.payment_status === 'paid';
+
+  const handlePayNow = async () => {
+    if (!order) return;
+    setIsPaying(true);
+    try {
+      const tokenResponse = await paymentAPI.createSnapToken(order.id);
+      const snapToken = tokenResponse.data.data.snap_token;
+
+      window.snap.pay(snapToken, {
+        onSuccess: () => {
+          toast.success('Pembayaran berhasil!');
+          fetchOrder();
+        },
+        onPending: () => {
+          toast('Pembayaran pending, cek status pesanan Anda', { icon: '⏳' });
+          fetchOrder();
+        },
+        onError: () => {
+          toast.error('Pembayaran gagal, silakan coba lagi');
+        },
+        onClose: () => {
+          toast('Pembayaran ditutup', { icon: 'ℹ️' });
+        },
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Gagal membuka halaman pembayaran');
+    } finally {
+      setIsPaying(false);
+    }
+  };
 
   const handleRefundRequest = async () => {
     if (!order || !refundReason || !ewalletPhone) {
@@ -310,31 +341,12 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
               </div>
             </Card>
 
-            {/* Payment Instructions - Show only for pending payments AND pending order status */}
-            {order.payment_status === 'pending' && order.status === 'pending' && (
-              <PaymentInstructions
-                total={order.total}
-                orderNumber={order.order_number}
-                createdAt={order.created_at}
-              />
-            )}
-
-            {/* Order cancelled manually */}
-            {order.status === 'cancelled' && order.payment_status !== 'expired' && (
+            {/* Order cancelled */}
+            {order.status === 'cancelled' && (
               <Card className="p-5 bg-red-50 border border-red-200">
                 <p className="text-red-700 font-medium">Order Dibatalkan</p>
                 <p className="text-red-600 text-sm mt-1">
                   Pembayaran tidak dapat dilakukan untuk order yang telah dibatalkan.
-                </p>
-              </Card>
-            )}
-
-            {/* Order expired */}
-            {order.payment_status === 'expired' && (
-              <Card className="p-5 bg-amber-50 border border-amber-200">
-                <p className="text-amber-700 font-medium">Waktu Pembayaran Habis</p>
-                <p className="text-amber-600 text-sm mt-1">
-                  Order telah dibatalkan karena melewati batas waktu pembayaran 24 jam. Silakan buat pesanan baru.
                 </p>
               </Card>
             )}
@@ -398,10 +410,19 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
             </Card>
 
             {/* Actions */}
-            {(canCancel || canRequestRefund) && (
+            {(canPay || canCancel || canRequestRefund) && (
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Aksi</h3>
                 <div className="space-y-2">
+                  {canPay && (
+                    <button
+                      onClick={handlePayNow}
+                      disabled={isPaying}
+                      className="w-full px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                    >
+                      {isPaying ? 'Memuat...' : 'Bayar Sekarang'}
+                    </button>
+                  )}
                   {canCancel && (
                     <>
                       <button

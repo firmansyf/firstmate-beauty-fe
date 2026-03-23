@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -19,6 +20,15 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={inter.className}>
+        <Script
+          src={
+            process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true'
+              ? 'https://app.midtrans.com/snap/snap.js'
+              : 'https://app.sandbox.midtrans.com/snap/snap.js'
+          }
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="lazyOnload"
+        />
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   Package,
-  QrCode,
   RotateCcw,
   ShoppingBag,
   Users,
@@ -65,11 +64,6 @@ export default function Sidebar() {
       href: '/admin/users',
       label: 'Pengguna',
       icon: Users,
-    },
-    {
-      href: '/admin/payment',
-      label: 'Pembayaran',
-      icon: QrCode,
     },
   ];
 

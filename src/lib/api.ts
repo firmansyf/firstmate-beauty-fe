@@ -161,18 +161,6 @@ export const uploadAPI = {
   deleteProductImage: (filename: string) =>
     api.delete(`/upload/product/${filename}`),
 
-  uploadQrisImage: (file: File) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    return api.post('/upload/qris', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
-
-  deleteQrisImage: () =>
-    api.delete('/upload/qris'),
 };
 
 export const ordersAPI = {
@@ -193,9 +181,6 @@ export const ordersAPI = {
   
   cancel: (id: number) =>
     api.post(`/orders/${id}/cancel`),
-
-  getPaymentInfo: (id: number) =>
-    api.get(`/orders/${id}/payment-info`),
 
   // Admin
   adminGetAll: (params?: {
@@ -248,6 +233,11 @@ export const dashboardAPI = {
 
   getSalesChart: () =>
     api.get('/dashboard/sales-chart'),
+};
+
+export const paymentAPI = {
+  createSnapToken: (orderId: number) =>
+    api.post(`/payment/${orderId}/token`),
 };
 
 export const refundsAPI = {
