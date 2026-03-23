@@ -9,14 +9,15 @@ import { ChevronLeft, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function ProductDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = use(params);
   const router = useRouter();
   const { addToCart } = useCartStore();
   const [product, setProduct] = useState<any>(null);
@@ -28,11 +29,11 @@ export default function ProductDetailPage({
 
   useEffect(() => {
     fetchProduct();
-  }, [params.slug]);
+  }, [slug]);
 
   const fetchProduct = async () => {
     try {
-      const response = await productsAPI.getBySlug(params.slug);
+      const response = await productsAPI.getBySlug(slug);
       setProduct(response.data.data);
     } catch (error) {
       console.error('Error fetching product:', error);
