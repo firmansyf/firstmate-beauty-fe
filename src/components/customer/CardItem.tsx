@@ -4,7 +4,7 @@
 import { formatCurrency } from '@/lib/utils';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 interface CartItemProps {
   item: {
@@ -22,7 +22,7 @@ interface CartItemProps {
   onRemove: (itemId: number) => void;
 }
 
-export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
+function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [imageError, setImageError] = useState(false);
   const finalPrice = item.discount_price || item.price;
@@ -84,7 +84,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
             <button
               onClick={() => handleQuantityChange(item.quantity - 1)}
               disabled={isUpdating || item.quantity <= 1}
-              className="p-1.5 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
@@ -94,7 +94,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
             <button
               onClick={() => handleQuantityChange(item.quantity + 1)}
               disabled={isUpdating || item.quantity >= item.stock}
-              className="p-1.5 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -120,3 +120,5 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
     </div>
   );
 }
+
+export default memo(CartItem);

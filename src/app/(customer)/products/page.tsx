@@ -3,7 +3,6 @@
 import Loader from '@/components/common/Loader';
 import ProductCard from '@/components/customer/ProductCard';
 import { productsAPI } from '@/lib/api';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -26,14 +25,6 @@ interface Category {
   name: string;
   slug: string;
 }
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 },
-  },
-};
 
 export default function ProductsPage() {
   return (
@@ -131,31 +122,17 @@ function ProductsContent() {
     <main className="bg-white min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-8"
-        >
+        <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Produk</h1>
           <p className="text-gray-500 mt-1">Temukan produk skincare terbaik untuk kulit Anda</p>
-        </motion.div>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <motion.aside
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="lg:w-56 flex-shrink-0"
-          >
+          <aside className="lg:w-56 flex-shrink-0">
             <div className="sticky top-20 space-y-6">
               {/* Search */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Cari
                 </label>
@@ -169,21 +146,15 @@ function ProductsContent() {
                     className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-colors"
                   />
                 </div>
-              </motion.div>
+              </div>
 
               {/* Categories */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Kategori
                 </label>
                 <div className="space-y-1">
-                  <motion.button
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={() => handleFilterChange('category', '')}
                     className={`w-full cursor-pointer text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                       !filters.category
@@ -192,15 +163,10 @@ function ProductsContent() {
                     }`}
                   >
                     Semua
-                  </motion.button>
-                  {categories.map((category, index) => (
-                    <motion.button
+                  </button>
+                  {categories.map((category) => (
+                    <button
                       key={category.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + index * 0.05 }}
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
                       onClick={() => handleFilterChange('category', category.slug)}
                       className={`w-full cursor-pointer text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                         filters.category === category.slug
@@ -209,17 +175,13 @@ function ProductsContent() {
                       }`}
                     >
                       {category.name}
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Sort */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Urutkan
                 </label>
@@ -233,128 +195,79 @@ function ProductsContent() {
                   <option value="price-DESC">Harga Tertinggi</option>
                   <option value="name-ASC">Nama (A-Z)</option>
                 </select>
-              </motion.div>
+              </div>
             </div>
-          </motion.aside>
+          </aside>
 
           {/* Products */}
           <div className="flex-1">
             {/* Results count */}
-            <AnimatePresence mode="wait">
-              {!isLoading && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-sm text-gray-500 mb-4"
-                >
-                  {pagination.totalItems} produk ditemukan
-                </motion.p>
-              )}
-            </AnimatePresence>
+            {!isLoading && (
+              <p className="text-sm text-gray-500 mb-4">
+                {pagination.totalItems} produk ditemukan
+              </p>
+            )}
 
-            {/* Loading */}
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div
-                  key="loader"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex justify-center py-20"
-                >
-                  <Loader text="Memuat produk..." />
-                </motion.div>
-              ) : products.length > 0 ? (
-                <motion.div
-                  key="products"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {/* Grid */}
-                  <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8"
-                  >
-                    {products.map((product, index) => (
-                      <ProductCard key={product.id} product={product} index={index} />
-                    ))}
-                  </motion.div>
+            {isLoading ? (
+              <div className="flex justify-center py-20">
+                <Loader text="Memuat produk..." />
+              </div>
+            ) : products.length > 0 ? (
+              <div>
+                {/* Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
 
-                  {/* Pagination */}
-                  {pagination.totalPages > 1 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="flex items-center justify-center gap-2"
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() =>
+                        setPagination({ ...pagination, currentPage: pagination.currentPage - 1 })
+                      }
+                      disabled={pagination.currentPage === 1}
+                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() =>
-                          setPagination({ ...pagination, currentPage: pagination.currentPage - 1 })
-                        }
-                        disabled={pagination.currentPage === 1}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <ChevronLeft className="w-4 h-4 text-gray-600" />
-                      </motion.button>
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    </button>
 
-                      <div className="flex gap-1">
-                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                          <motion.button
-                            key={page}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setPagination({ ...pagination, currentPage: page })}
-                            className={`w-9 h-9 text-sm cursor-pointer rounded-lg font-medium transition-colors ${
-                              pagination.currentPage === page
-                                ? 'bg-pink-600 text-white'
-                                : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                          >
-                            {page}
-                          </motion.button>
-                        ))}
-                      </div>
+                    <div className="flex gap-1">
+                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setPagination({ ...pagination, currentPage: page })}
+                          className={`w-9 h-9 text-sm cursor-pointer rounded-lg font-medium transition-colors ${
+                            pagination.currentPage === page
+                              ? 'bg-pink-600 text-white'
+                              : 'text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
 
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() =>
-                          setPagination({ ...pagination, currentPage: pagination.currentPage + 1 })
-                        }
-                        disabled={pagination.currentPage === pagination.totalPages}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
-                      </motion.button>
-                    </motion.div>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="text-center py-20"
-                >
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="text-5xl mb-4"
-                  >
-                    ✨
-                  </motion.div>
-                  <p className="text-gray-500">Produk tidak ditemukan</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <button
+                      onClick={() =>
+                        setPagination({ ...pagination, currentPage: pagination.currentPage + 1 })
+                      }
+                      disabled={pagination.currentPage === pagination.totalPages}
+                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <span className="text-5xl mb-4 block">✨</span>
+                <p className="text-gray-500">Produk tidak ditemukan</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

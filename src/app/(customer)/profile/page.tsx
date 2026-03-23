@@ -193,7 +193,7 @@ export default function CustomerProfilePage() {
                 Hubungi kami jika ada pertanyaan atau kendala.
               </p>
               <a
-                href="https://wa.me/6281234567890"
+                href="https://wa.me/6285117176837"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full px-4 py-2 bg-pink-600 text-white text-sm font-medium text-center rounded-lg hover:bg-pink-700 transition-colors"
