@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Package,
   RotateCcw,
   ShoppingBag,
@@ -64,6 +65,11 @@ export default function Sidebar() {
       href: '/admin/users',
       label: 'Pengguna',
       icon: Users,
+    },
+    {
+      href: '/admin/feedbacks',
+      label: 'Feedback',
+      icon: MessageSquare,
     },
   ];
 

@@ -238,6 +238,9 @@ export const dashboardAPI = {
 export const paymentAPI = {
   createSnapToken: (orderId: number) =>
     api.post(`/payment/${orderId}/token`),
+
+  checkStatus: (orderId: number) =>
+    api.get(`/payment/${orderId}/check-status`),
 };
 
 export const refundsAPI = {
@@ -318,6 +321,37 @@ export const bannersAPI = {
 
   delete: (id: number) =>
     api.delete(`/banners/${id}`),
+};
+
+export const feedbackAPI = {
+  submit: (data: {
+    name: string;
+    email?: string;
+    rating?: number;
+    category?: string;
+    message: string;
+  }) => api.post('/feedback', data),
+
+  // Admin
+  adminGetAll: (params?: {
+    rating?: number;
+    category?: string;
+    is_read?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get('/feedback/admin/all', { params }),
+
+  adminGetUnreadCount: () =>
+    api.get('/feedback/admin/unread-count'),
+
+  adminMarkAsRead: (id: number) =>
+    api.patch(`/feedback/admin/${id}/read`),
+
+  adminMarkAllAsRead: () =>
+    api.patch('/feedback/admin/mark-all-read'),
+
+  adminDelete: (id: number) =>
+    api.delete(`/feedback/admin/${id}`),
 };
 
 export default api;

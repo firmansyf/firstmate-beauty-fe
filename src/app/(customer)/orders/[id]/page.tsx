@@ -25,7 +25,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface OrderItem {
@@ -58,7 +58,8 @@ interface Order {
   items: OrderItem[];
 }
 
-export default function CustomerOrderDetailPage({ params }: { params: { id: string } }) {
+export default function CustomerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,11 +72,11 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
 
   useEffect(() => {
     fetchOrder();
-  }, [params.id]);
+  }, [id]);
 
   const fetchOrder = async () => {
     try {
-      const response = await ordersAPI.getDetail(parseInt(params.id));
+      const response = await ordersAPI.getDetail(parseInt(id));
       setOrder(response.data.data);
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -121,8 +122,14 @@ export default function CustomerOrderDetailPage({ params }: { params: { id: stri
       const snapToken = tokenResponse.data.data.snap_token;
 
       window.snap.pay(snapToken, {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success('Pembayaran berhasil!');
+          // Optimistically hide button immediately
+          setOrder((prev) => prev ? { ...prev, payment_status: 'paid' } : prev);
+          // Sync actual status from Midtrans to DB, then refresh
+          try {
+            await paymentAPI.checkStatus(order.id);
+          } catch {}
           fetchOrder();
         },
         onPending: () => {

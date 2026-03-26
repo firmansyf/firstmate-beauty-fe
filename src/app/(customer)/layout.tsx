@@ -3,6 +3,7 @@
 
 import Footer from '@/components/common/Footer';
 import Navbar from '@/components/common/Navbar';
+import FeedbackButton from '@/components/customer/FeedbackButton';
 import { useAuthStore } from '@/store/authStore';
 import { useEffect } from 'react';
 import '../globals.css';
@@ -23,6 +24,7 @@ export default function CustomerLayout({
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <FeedbackButton />
     </div>
   );
 }
