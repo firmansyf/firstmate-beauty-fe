@@ -67,7 +67,7 @@ export default function FeedbackButton() {
       {/* Floating Button */}
       <button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 bg-pink-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-pink-700 transition-all duration-200 hover:shadow-xl"
+        className="fixed bottom-6 right-6 z-40 flex cursor-pointer items-center gap-2 px-4 py-3 bg-pink-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-pink-700 transition-all duration-200 hover:shadow-xl"
       >
         <MessageSquarePlus className="w-4 h-4" />
         <span className="hidden sm:inline">Feedback</span>
@@ -85,7 +85,7 @@ export default function FeedbackButton() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -196,7 +196,7 @@ export default function FeedbackButton() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-4 py-2.5 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer px-4 py-2.5 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Mengirim...' : 'Kirim Feedback'}
               </button>

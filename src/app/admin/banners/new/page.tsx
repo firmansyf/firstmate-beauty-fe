@@ -133,7 +133,7 @@ export default function AdminCreateBannerPage() {
       {/* Header */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+        className="flex items-center gap-1 cursor-pointer text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />
         Kembali

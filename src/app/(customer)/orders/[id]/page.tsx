@@ -268,7 +268,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
         {/* Header */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+          className="flex items-center cursor-pointer gap-1 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           Kembali
@@ -425,7 +425,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
                     <button
                       onClick={handlePayNow}
                       disabled={isPaying}
-                      className="w-full px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                      className="w-full cursor-pointer px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
                     >
                       {isPaying ? 'Memuat...' : 'Bayar Sekarang'}
                     </button>
@@ -435,7 +435,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
                       <button
                         onClick={handleCancelOrder}
                         disabled={isCancelling}
-                        className="w-full px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="w-full px-4 cursor-pointer py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         {isCancelling ? 'Membatalkan...' : 'Batalkan Pesanan'}
                       </button>
