@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import NextImage from 'next/image';
 import Link from 'next/link';
+import NotificationBell from './NotificationBell';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -78,11 +79,14 @@ export default function Sidebar() {
     <>
       {/* Logo */}
       <div className="p-5 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <Link href="/">
-            <NextImage src="/logo.png" alt="Alfath Skin" width={100} height={34} className="object-contain" />
-          </Link>
-          <span className="text-xs text-gray-500">Admin</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Link href="/">
+              <NextImage src="/logo.png" alt="Alfath Skin" width={100} height={34} className="object-contain" />
+            </Link>
+            <span className="text-xs text-gray-500">Admin</span>
+          </div>
+          <NotificationBell />
         </div>
       </div>
 

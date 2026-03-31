@@ -354,4 +354,21 @@ export const feedbackAPI = {
     api.delete(`/feedback/admin/${id}`),
 };
 
+export const notificationsAPI = {
+  getAll: (params?: { page?: number; limit?: number; is_read?: string }) =>
+    api.get('/notifications', { params }),
+
+  getUnreadCount: () =>
+    api.get('/notifications/unread-count'),
+
+  markAsRead: (id: number) =>
+    api.put(`/notifications/${id}/read`),
+
+  markAllAsRead: () =>
+    api.put('/notifications/read-all'),
+
+  delete: (id: number) =>
+    api.delete(`/notifications/${id}`),
+};
+
 export default api;
