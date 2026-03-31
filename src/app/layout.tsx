@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Alfath Skin - Jual Beli Produk Skincare Online',
   description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({

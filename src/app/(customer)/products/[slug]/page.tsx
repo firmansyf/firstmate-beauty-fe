@@ -165,9 +165,12 @@ export default function ProductDetailPage({
               )}
             </div>
 
-            <div className="mb-6">
+            <div className="mb-6 space-y-1">
               <p className="text-sm text-gray-500">
-                Stok: <span className="text-gray-900 font-medium">{product.stock} {product.unit}</span>
+                Stok: <span className="text-gray-900 font-medium">{product.stock}</span>
+              </p>
+              <p className="text-sm text-gray-500">
+                Satuan: <span className="text-gray-900 font-medium">{product.unit}</span>
               </p>
             </div>
 

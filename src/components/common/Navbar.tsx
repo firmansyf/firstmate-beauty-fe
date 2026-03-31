@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Menu,
 } from 'lucide-react';
+import NextImage from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -68,8 +69,8 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
-            <Link href="/" className="text-xl font-bold text-pink-600">
-              Alfath Skin
+            <Link href="/">
+              <NextImage src="/logo.png" alt="Alfath Skin" width={150} height={30} className="object-contain" />
             </Link>
 
             {/* Desktop Nav */}
@@ -120,7 +121,7 @@ export default function Navbar() {
                         <Link href="/orders" className="block px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50">
                           Pesanan
                         </Link>
-                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                        <button onClick={handleLogout} className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                           Keluar
                         </button>
                       </div>
@@ -180,7 +181,7 @@ export default function Navbar() {
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 flex-shrink-0">
-          <span className="text-base font-bold text-pink-600">Alfath Skin</span>
+          <NextImage src="/logo.png" alt="Alfath Skin" width={120} height={40} className="object-contain" />
           <button
             onClick={() => setIsDrawerOpen(false)}
             className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -311,7 +312,7 @@ export default function Navbar() {
           <div className="px-3 py-3 border-t border-gray-100 flex-shrink-0">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              className="flex cursor-pointer items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-5 h-5 flex-shrink-0" />
               Keluar

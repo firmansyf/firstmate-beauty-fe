@@ -138,7 +138,7 @@ export default function FeedbackButton() {
                       key={cat.value}
                       type="button"
                       onClick={() => setForm({ ...form, category: cat.value })}
-                      className={`px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left ${
+                      className={`px-3 cursor-pointer py-2 text-xs font-medium rounded-lg border transition-colors text-left ${
                         form.category === cat.value
                           ? 'bg-pink-50 border-pink-300 text-pink-700'
                           : 'border-gray-200 text-gray-600 hover:bg-gray-50'

@@ -2,6 +2,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/authStore';
+import NextImage from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -24,8 +25,8 @@ export default function AuthLayout({
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <span className="text-xl font-semibold text-gray-900">Alfath Skin</span>
+        <Link href="/" className="flex items-center justify-center mb-8">
+          <NextImage src="/logo.png" alt="Alfath Skin" width={190} height={90} className="object-contain" />
         </Link>
 
         {/* Card */}
