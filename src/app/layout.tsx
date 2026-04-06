@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'Alfath Skin',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Alfath Skin - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image'],
   },
   icons: {
     icon: '/logo.png',
