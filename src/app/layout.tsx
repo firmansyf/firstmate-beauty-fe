@@ -37,20 +37,11 @@ export const metadata: Metadata = {
     siteName: 'Alfath Skin',
     title: 'Alfath Skin - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
-    images: [
-      {
-        url: '/opengraph-image',
-        width: 1200,
-        height: 630,
-        alt: 'Alfath Skin',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Alfath Skin - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
-    images: ['/opengraph-image'],
   },
   icons: {
     icon: '/logo.png',

@@ -5,7 +5,21 @@ export const alt = 'Alfath Skin - Jual Beli Produk Skincare Online';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default function OgImage() {
+export default async function OgImage() {
+  // Fetch logo from public folder
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin-production.up.railway.app';
+  let logoSrc: string | null = null;
+  try {
+    const res = await fetch(`${baseUrl}/logo.png`);
+    if (res.ok) {
+      const buf = await res.arrayBuffer();
+      const base64 = Buffer.from(buf).toString('base64');
+      logoSrc = `data:image/png;base64,${base64}`;
+    }
+  } catch {
+    // logo not available, fallback to text only
+  }
+
   return new ImageResponse(
     (
       <div
@@ -21,7 +35,7 @@ export default function OgImage() {
           position: 'relative',
         }}
       >
-        {/* Background pattern dots */}
+        {/* Background dots */}
         <div
           style={{
             position: 'absolute',
@@ -42,54 +56,43 @@ export default function OgImage() {
             background: 'rgba(255,255,255,0.12)',
             border: '1px solid rgba(255,255,255,0.25)',
             borderRadius: '24px',
-            padding: '60px 80px',
-            backdropFilter: 'blur(10px)',
+            padding: '56px 80px',
             maxWidth: '900px',
             width: '100%',
           }}
         >
-          {/* Badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '999px',
-              padding: '8px 20px',
-              marginBottom: '28px',
-              border: '1px solid rgba(255,255,255,0.3)',
-            }}
-          >
-            <span style={{ fontSize: '18px' }}>✨</span>
-            <span style={{ color: 'white', fontSize: '18px', fontWeight: 600 }}>
-              Skincare Terpercaya
-            </span>
-          </div>
+          {/* Logo or text */}
+          {logoSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoSrc}
+              alt="Alfath Skin"
+              width={240}
+              height={100}
+              style={{ objectFit: 'contain', marginBottom: '24px' }}
+            />
+          ) : (
+            <div
+              style={{
+                fontSize: '64px',
+                fontWeight: 800,
+                color: 'white',
+                marginBottom: '20px',
+                letterSpacing: '-1px',
+              }}
+            >
+              Alfath Skin
+            </div>
+          )}
 
-          {/* Title */}
-          <div
-            style={{
-              fontSize: '72px',
-              fontWeight: 800,
-              color: 'white',
-              textAlign: 'center',
-              lineHeight: 1.1,
-              marginBottom: '20px',
-              letterSpacing: '-1px',
-            }}
-          >
-            Alfath Skin
-          </div>
-
-          {/* Subtitle */}
+          {/* Tagline */}
           <div
             style={{
               fontSize: '28px',
-              color: 'rgba(255,255,255,0.85)',
+              color: 'rgba(255,255,255,0.9)',
               textAlign: 'center',
               lineHeight: 1.4,
-              marginBottom: '36px',
+              marginBottom: '32px',
               maxWidth: '600px',
             }}
           >
@@ -117,51 +120,11 @@ export default function OgImage() {
           </div>
         </div>
 
-        {/* Emoji decorations */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '40px',
-            left: '60px',
-            fontSize: '48px',
-            opacity: 0.6,
-          }}
-        >
-          🧴
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            top: '60px',
-            right: '80px',
-            fontSize: '40px',
-            opacity: 0.5,
-          }}
-        >
-          💧
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '50px',
-            left: '80px',
-            fontSize: '36px',
-            opacity: 0.5,
-          }}
-        >
-          🌸
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '40px',
-            right: '70px',
-            fontSize: '44px',
-            opacity: 0.6,
-          }}
-        >
-          ✨
-        </div>
+        {/* Decorations */}
+        <div style={{ position: 'absolute', top: '40px', left: '60px', fontSize: '48px', opacity: 0.6 }}>🧴</div>
+        <div style={{ position: 'absolute', top: '60px', right: '80px', fontSize: '40px', opacity: 0.5 }}>💧</div>
+        <div style={{ position: 'absolute', bottom: '50px', left: '80px', fontSize: '36px', opacity: 0.5 }}>🌸</div>
+        <div style={{ position: 'absolute', bottom: '40px', right: '70px', fontSize: '44px', opacity: 0.6 }}>✨</div>
       </div>
     ),
     { ...size }
