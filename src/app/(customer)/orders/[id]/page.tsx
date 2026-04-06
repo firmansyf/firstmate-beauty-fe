@@ -124,11 +124,9 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
       window.snap.pay(snapToken, {
         onSuccess: async () => {
           toast.success('Pembayaran berhasil!');
-          // Optimistically hide button immediately
           setOrder((prev) => prev ? { ...prev, payment_status: 'paid' } : prev);
-          // Sync actual status from Midtrans to DB, then refresh
           try {
-            await paymentAPI.checkStatus(order.id);
+            await paymentAPI.confirmPayment(order.id);
           } catch {}
           fetchOrder();
         },
@@ -144,7 +142,8 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
         },
       });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Gagal membuka halaman pembayaran');
+      const msg = error.response?.data?.detail || error.response?.data?.message || 'Gagal membuka halaman pembayaran';
+      toast.error(msg);
     } finally {
       setIsPaying(false);
     }

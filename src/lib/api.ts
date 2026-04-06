@@ -239,6 +239,9 @@ export const paymentAPI = {
   createSnapToken: (orderId: number) =>
     api.post(`/payment/${orderId}/token`),
 
+  confirmPayment: (orderId: number) =>
+    api.post(`/payment/${orderId}/confirm`),
+
   checkStatus: (orderId: number) =>
     api.get(`/payment/${orderId}/check-status`),
 };

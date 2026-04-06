@@ -112,8 +112,9 @@ export default function CheckoutPage() {
       const snapToken = tokenResponse.data.data.snap_token;
 
       window.snap.pay(snapToken, {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success('Pembayaran berhasil!');
+          try { await paymentAPI.confirmPayment(orderId); } catch {}
           router.push(`/orders/${orderId}`);
         },
         onPending: () => {
