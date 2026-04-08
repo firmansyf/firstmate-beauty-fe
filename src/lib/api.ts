@@ -88,6 +88,9 @@ export const productsAPI = {
   getBySlug: (slug: string) =>
     api.get(`/products/${slug}`),
 
+  getRelated: (slug: string) =>
+    api.get(`/products/${slug}/related`),
+
   getById: (id: number) =>
     api.get(`/products/id/${id}`),
 

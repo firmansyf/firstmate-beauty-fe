@@ -1,6 +1,7 @@
 'use client';
 
 import Loader from '@/components/common/Loader';
+import RelatedProducts from '@/components/customer/RelatedProducts';
 import { productsAPI } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@/lib/utils';
@@ -78,7 +79,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const isOutOfStock = !product.is_available || product.stock === 0;
 
   return (
-    <main className="bg-white min-h-screen">
+    <main className="bg-white min-h-screen pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav aria-label="breadcrumb" className="flex items-center gap-2 text-sm mb-6">
@@ -276,6 +277,11 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Related Products */}
+      <div className="border-t border-gray-100 mt-8">
+        <RelatedProducts currentSlug={slug} />
       </div>
     </main>
   );
