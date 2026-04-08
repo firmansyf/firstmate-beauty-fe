@@ -69,8 +69,8 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
-            <Link href="/">
-              <NextImage src="/logo.png" alt="Alfath Skin" width={150} height={30} className="object-contain" />
+            <Link href="/" className='flex items-start'>
+              <NextImage src="/logo.png" alt="Alfath Skin" width={80} height={30} className='object-contain' />
             </Link>
 
             {/* Desktop Nav */}
