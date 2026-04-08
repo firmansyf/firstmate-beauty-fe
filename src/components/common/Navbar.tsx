@@ -70,7 +70,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className='flex items-start'>
-              <NextImage src="/logo.png" alt="Alfath Skin" width={80} height={30} className='object-contain' />
+              <NextImage src="/logo.png" alt="Alfath Skin" width={70} height={30} className='object-contain' />
             </Link>
 
             {/* Desktop Nav */}
