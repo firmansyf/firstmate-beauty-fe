@@ -196,7 +196,7 @@ export default function HomePage() {
           <div className="mt-10 flex items-center justify-center gap-6 text-white/70 text-sm">
             <span className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-pink-300" />
-              Gratis ongkir
+              Produk terpercaya
             </span>
             <span className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-pink-300" />
