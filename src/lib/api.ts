@@ -66,6 +66,12 @@ export const authAPI = {
 
   verifyOTP: (data: { email: string; otp: string }) =>
     api.post('/otp/verify', data),
+
+  forgotPassword: (data: { email: string }) =>
+    api.post('/auth/forgot-password', data),
+
+  resetPassword: (data: { email: string; newPassword: string }) =>
+    api.post('/auth/reset-password', data),
 };
 
 export const productsAPI = {
