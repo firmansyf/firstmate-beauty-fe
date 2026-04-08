@@ -181,7 +181,7 @@ export default function Navbar() {
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 flex-shrink-0">
-          <NextImage src="/logo.png" alt="Alfath Skin" width={120} height={40} className="object-contain" />
+          <NextImage src="/logo.png" alt="Alfath Skin" width={65} height={40} className="object-contain" />
           <button
             onClick={() => setIsDrawerOpen(false)}
             className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
