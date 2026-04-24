@@ -8,7 +8,8 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin-production.up.railway.app';
+const ogImage = `${siteUrl}/logo.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -37,11 +38,20 @@ export const metadata: Metadata = {
     siteName: 'Alfath Skin',
     title: 'Alfath Skin - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
+    images: [
+      {
+        url: ogImage,
+        width: 323,
+        height: 225,
+        alt: 'Alfath Skin',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Alfath Skin - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
+    images: [ogImage],
   },
   icons: {
     icon: '/logo.png',
