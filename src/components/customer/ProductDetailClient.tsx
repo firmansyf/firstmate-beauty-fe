@@ -1,6 +1,5 @@
 'use client';
 
-import Loader from '@/components/common/Loader';
 import RelatedProducts from '@/components/customer/RelatedProducts';
 import { productsAPI } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
@@ -12,6 +11,62 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+
+const ProductDetailSkeleton = () => (
+  <main className="bg-white min-h-screen pb-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="h-3 bg-gray-100 animate-pulse rounded w-14" />
+        <span className="text-gray-200">/</span>
+        <div className="h-3 bg-gray-100 animate-pulse rounded w-14" />
+        <span className="text-gray-200">/</span>
+        <div className="h-3 bg-gray-200 animate-pulse rounded w-32" />
+      </div>
+
+      <div className="h-4 bg-gray-100 animate-pulse rounded w-20 mb-8" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="aspect-square bg-gray-200 animate-pulse rounded-lg" />
+
+        <div>
+          <div className="h-3 bg-gray-100 animate-pulse rounded w-24 mb-3" />
+          <div className="h-7 bg-gray-200 animate-pulse rounded w-3/4 mb-2" />
+          <div className="h-7 bg-gray-200 animate-pulse rounded w-1/2 mb-5" />
+
+          <div className="pb-6 mb-6 border-b border-gray-100 space-y-2">
+            <div className="h-7 bg-gray-200 animate-pulse rounded w-40" />
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-20" />
+          </div>
+
+          <div className="space-y-2 mb-6">
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-28" />
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-32" />
+          </div>
+
+          <div className="space-y-2 mb-6">
+            <div className="h-3 bg-gray-200 animate-pulse rounded w-20 mb-2" />
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-full" />
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-full" />
+            <div className="h-3 bg-gray-100 animate-pulse rounded w-4/5" />
+          </div>
+
+          <div className="mb-6">
+            <div className="h-3 bg-gray-200 animate-pulse rounded w-16 mb-2" />
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-28 bg-gray-100 animate-pulse rounded-lg" />
+              <div className="space-y-1.5">
+                <div className="h-3 bg-gray-100 animate-pulse rounded w-16" />
+                <div className="h-4 bg-gray-200 animate-pulse rounded w-24" />
+              </div>
+            </div>
+          </div>
+
+          <div className="h-11 bg-gray-200 animate-pulse rounded-lg w-full" />
+        </div>
+      </div>
+    </div>
+  </main>
+);
 
 export default function ProductDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
@@ -59,11 +114,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader size="lg" />
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {

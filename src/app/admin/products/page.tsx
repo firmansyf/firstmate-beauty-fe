@@ -284,114 +284,109 @@ export default function AdminProductsPage() {
       {isLoading ? (
         <ProductTableSkeleton />
       ) : products.length > 0 ? (
-        <motion.div
-          key={`${page}-${debouncedSearch}-${categoryFilter}-${statusFilter}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Card>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Produk</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Harga</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Stok</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase">Aksi</th>
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Produk</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Harga</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Stok</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map(product => (
+                  <tr
+                    key={product.id}
+                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          {product.image_url ? (
+                            <Image
+                              src={product.image_url}
+                              alt={product.name}
+                              width={40}
+                              height={40}
+                              sizes="40px"
+                              loading="lazy"
+                              className="w-10 h-10 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                          <p className="text-xs text-gray-500 truncate">{product.slug}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">
+                      {product.category_name || '-'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatCurrency(product.discount_price || product.price)}
+                      </p>
+                      {product.discount_price && (
+                        <p className="text-xs text-gray-400 line-through">{formatCurrency(product.price)}</p>
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        product.stock > 10
+                          ? 'bg-pink-50 text-pink-700'
+                          : product.stock > 0
+                          ? 'bg-yellow-50 text-yellow-700'
+                          : 'bg-red-50 text-red-700'
+                      }`}>
+                        {product.stock} / {product.unit}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        product.is_available ? 'bg-pink-50 text-pink-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {product.is_available ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/admin/products/${product.id}/edit`}
+                          className="p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id, product.name)}
+                          className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {products.map(product => (
-                    <tr
-                      key={product.id}
-                      className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            {product.image_url ? (
-                              <Image
-                                src={product.image_url}
-                                alt={product.name}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package className="w-4 h-4 text-gray-400" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{product.slug}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {product.category_name || '-'}
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="text-sm font-medium text-gray-900">
-                          {formatCurrency(product.discount_price || product.price)}
-                        </p>
-                        {product.discount_price && (
-                          <p className="text-xs text-gray-400 line-through">{formatCurrency(product.price)}</p>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          product.stock > 10
-                            ? 'bg-pink-50 text-pink-700'
-                            : product.stock > 0
-                            ? 'bg-yellow-50 text-yellow-700'
-                            : 'bg-red-50 text-red-700'
-                        }`}>
-                          {product.stock} / {product.unit}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          product.is_available ? 'bg-pink-50 text-pink-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {product.is_available ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link
-                            href={`/admin/products/${product.id}/edit`}
-                            className="p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product.id, product.name)}
-                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Hapus"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <PaginationBar
-              page={page}
-              total={meta.total}
-              totalPages={meta.totalPages}
-              onPageChange={setPage}
-            />
-          </Card>
-        </motion.div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationBar
+            page={page}
+            total={meta.total}
+            totalPages={meta.totalPages}
+            onPageChange={setPage}
+          />
+        </Card>
       ) : (
         <EmptyState
           icon={Package}

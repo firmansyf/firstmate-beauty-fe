@@ -1,12 +1,32 @@
 'use client';
 
-import Loader from '@/components/common/Loader';
 import ProductCard from '@/components/customer/ProductCard';
 import { productsAPI } from '@/lib/api';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+
+const SKELETON_COUNT = 12;
+
+const ProductsSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+    {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+      <div
+        key={i}
+        className="bg-white rounded-lg border border-gray-100 overflow-hidden"
+      >
+        <div className="aspect-square bg-gray-200 animate-pulse" />
+        <div className="p-3 space-y-2">
+          <div className="h-3 bg-gray-100 animate-pulse rounded w-16" />
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4" />
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-20 mt-1" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 interface Product {
   id: number;
@@ -28,7 +48,21 @@ interface Category {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600"></div></div>}>
+    <Suspense
+      fallback={
+        <main className="bg-white min-h-screen">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <h1 className="text-2xl font-semibold text-gray-900">Produk</h1>
+              <p className="text-gray-500 mt-1">
+                Temukan produk skincare terbaik untuk kulit Anda
+              </p>
+            </div>
+            <ProductsSkeleton />
+          </div>
+        </main>
+      }
+    >
       <ProductsContent />
     </Suspense>
   );
@@ -209,9 +243,7 @@ function ProductsContent() {
             )}
 
             {isLoading ? (
-              <div className="flex justify-center py-20">
-                <Loader text="Memuat produk..." />
-              </div>
+              <ProductsSkeleton />
             ) : products.length > 0 ? (
               <div>
                 {/* Grid */}

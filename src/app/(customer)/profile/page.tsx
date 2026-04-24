@@ -3,6 +3,7 @@
 
 import Card from '@/components/common/Card';
 import Loader from '@/components/common/Loader';
+import FeedbackModal from '@/components/customer/FeedbackModal';
 import { authAPI, ordersAPI } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
@@ -10,6 +11,7 @@ import {
   ChevronRight,
   LogOut,
   Mail,
+  MessageSquarePlus,
   Package,
   Phone,
   ShoppingBag,
@@ -31,6 +33,7 @@ export default function CustomerProfilePage() {
   const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [orderStats, setOrderStats] = useState<OrderStats>({ total: 0, pending: 0, completed: 0 });
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -175,6 +178,17 @@ export default function CustomerProfilePage() {
                 </Link>
 
                 <button
+                  onClick={() => setIsFeedbackOpen(true)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <MessageSquarePlus className="w-5 h-5 text-gray-400" />
+                    <span className="text-sm text-gray-700">Kirim Feedback</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
+
+                <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-red-50 transition-colors text-left"
                 >
@@ -204,6 +218,8 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       </div>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </main>
   );
 }
