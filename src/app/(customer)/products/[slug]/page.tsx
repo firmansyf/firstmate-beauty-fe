@@ -29,21 +29,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = product.name;
   const description = product.description
     ? product.description.slice(0, 155)
-    : `Beli ${product.name} original di Alfath Skin. Kualitas terjamin dengan harga terbaik.`;
+    : `Beli ${product.name} original di FirstMate Beauty. Kualitas terjamin dengan harga terbaik.`;
 
   return {
     title,
     description,
-    keywords: [product.name, product.category_name, 'skincare', 'perawatan kulit', 'alfath skin'].filter(Boolean),
+    keywords: [product.name, product.category_name, 'skincare', 'perawatan kulit', 'FirstMate Beauty'].filter(Boolean),
     openGraph: {
-      title: `${product.name} | Alfath Skin`,
+      title: `${product.name} | FirstMate Beauty`,
       description,
       type: 'website',
       images: product.image_url ? [{ url: product.image_url, alt: product.name }] : [],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${product.name} | Alfath Skin`,
+      title: `${product.name} | FirstMate Beauty`,
       description,
       images: product.image_url ? [product.image_url] : [],
     },
@@ -77,7 +77,7 @@ export default async function ProductDetailPage({ params }: Props) {
         },
         brand: {
           '@type': 'Brand',
-          name: 'Alfath Skin',
+          name: 'FirstMate Beauty',
         },
       }
     : null;

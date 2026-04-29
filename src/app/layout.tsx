@@ -14,13 +14,13 @@ const ogImage = `${siteUrl}/logo.png`;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Alfath Skin - Jual Beli Produk Skincare Online',
-    template: '%s | Alfath Skin',
+    default: 'FirstMate Beauty - Jual Beli Produk Skincare Online',
+    template: '%s | FirstMate Beauty',
   },
   description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau. Temukan produk perawatan kulit original dengan harga terbaik.',
-  keywords: ['skincare', 'perawatan kulit', 'kosmetik', 'kecantikan', 'alfath skin', 'jual skincare', 'beli skincare online'],
-  authors: [{ name: 'Alfath Skin' }],
-  creator: 'Alfath Skin',
+  keywords: ['skincare', 'perawatan kulit', 'kosmetik', 'kecantikan', 'FirstMate Beauty', 'jual skincare', 'beli skincare online'],
+  authors: [{ name: 'FirstMate Beauty' }],
+  creator: 'FirstMate Beauty',
   robots: {
     index: true,
     follow: true,
@@ -35,21 +35,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'id_ID',
     url: siteUrl,
-    siteName: 'Alfath Skin',
-    title: 'Alfath Skin - Jual Beli Produk Skincare Online',
+    siteName: 'FirstMate Beauty',
+    title: 'FirstMate Beauty - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
     images: [
       {
         url: ogImage,
         width: 323,
         height: 225,
-        alt: 'Alfath Skin',
+        alt: 'FirstMate Beauty',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Alfath Skin - Jual Beli Produk Skincare Online',
+    title: 'FirstMate Beauty - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
     images: [ogImage],
   },
@@ -74,7 +74,7 @@ export default function RootLayout({
           data={{
             '@context': 'https://schema.org',
             '@type': 'Organization',
-            name: 'Alfath Skin',
+            name: 'FirstMate Beauty',
             url: siteUrl,
             logo: `${siteUrl}/logo.png`,
             description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',

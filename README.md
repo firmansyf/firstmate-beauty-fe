@@ -1,6 +1,6 @@
-# Alfath Skin - Frontend
+# FirstMate Beauty - Frontend
 
-E-commerce frontend for **Alfath Skin**, a skincare product marketplace built with Next.js 15 and React 19.
+E-commerce frontend for **FirstMate Beauty**, a skincare product marketplace built with Next.js 15 and React 19.
 
 ## Tech Stack
 

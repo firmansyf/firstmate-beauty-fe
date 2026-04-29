@@ -82,7 +82,7 @@ export default function Sidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/">
-              <NextImage src="/logo.png" alt="Alfath Skin" width={100} height={34} className="object-contain" />
+              <NextImage src="/logo.png" alt="FirstMate Beauty" width={100} height={34} className="object-contain" />
             </Link>
             <span className="text-xs text-gray-500">Admin</span>
           </div>
@@ -148,7 +148,7 @@ export default function Sidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-100 z-40 flex items-center justify-between px-4">
-        <span className="text-sm font-semibold text-gray-900">Alfath Skin Admin</span>
+        <span className="text-sm font-semibold text-gray-900">FirstMate Beauty Admin</span>
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className="p-2 hover:bg-gray-50 rounded-lg"

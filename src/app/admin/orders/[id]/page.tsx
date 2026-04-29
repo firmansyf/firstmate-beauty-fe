@@ -332,7 +332,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
             <div className="space-y-2">
               {order.whatsapp_number && (
                 <a
-                  href={`https://wa.me/${order.whatsapp_number.replace(/\D/g, '')}?text=Halo ${order.customer_name}, terima kasih telah memesan di Alfath Skin!`}
+                  href={`https://wa.me/${order.whatsapp_number.replace(/\D/g, '')}?text=Halo ${order.customer_name}, terima kasih telah memesan di FirstMate Beauty!`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full px-3 py-2 bg-pink-600 text-white text-sm text-center rounded-lg hover:bg-pink-700 transition-colors"

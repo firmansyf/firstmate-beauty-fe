@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
       <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Selamat datang di Admin Panel Alfath Skin</p>
+          <p className="text-sm text-gray-500 mt-1">Selamat datang di Admin Panel FirstMate Beauty</p>
         </div>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link

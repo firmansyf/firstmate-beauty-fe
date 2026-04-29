@@ -26,7 +26,7 @@ export default function AuthLayout({
       <div className="w-full max-w-sm">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center mb-8">
-          <NextImage src="/logo.png" alt="Alfath Skin" width={90} height={90} className="object-contain" />
+          <NextImage src="/logo.png" alt="FirstMate Beauty" width={90} height={90} className="object-contain" />
         </Link>
 
         {/* Card */}
@@ -36,7 +36,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6">
-          © {new Date().getFullYear()} Alfath Skin
+          © {new Date().getFullYear()} FirstMate Beauty
         </p>
       </div>
     </div>

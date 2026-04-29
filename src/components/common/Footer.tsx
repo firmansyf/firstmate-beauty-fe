@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Brand */}
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-pink-600">Alfath Skin</span>
+            <span className="text-lg font-semibold text-pink-600">FirstMate Beauty</span>
           </div>
 
           {/* Links */}
