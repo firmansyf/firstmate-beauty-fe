@@ -305,7 +305,10 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               )}
             </div>
 
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mt-1 mb-4 leading-snug break-words">
+            <h1
+              className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mt-1 mb-4 leading-snug break-words line-clamp-3"
+              title={product.name}
+            >
               {product.name}
             </h1>
 
