@@ -18,6 +18,8 @@ export default function AdminCreateProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -28,6 +30,7 @@ export default function AdminCreateProductPage() {
     unit: 'pcs',
     category_id: '',
     image_url: '',
+    images: [] as string[],
     brand: '',
     masa_penyimpanan: '',
     jenis_kulit: [] as string[],
@@ -122,6 +125,45 @@ export default function AdminCreateProductPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleGalleryUpload = async (files: FileList | File[]) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024;
+    const valid: File[] = [];
+    for (const f of Array.from(files)) {
+      if (!allowedTypes.includes(f.type)) {
+        toast.error(`${f.name}: format tidak didukung`);
+        continue;
+      }
+      if (f.size > maxSize) {
+        toast.error(`${f.name}: ukuran melebihi 5MB`);
+        continue;
+      }
+      valid.push(f);
+    }
+    if (!valid.length) return;
+
+    setIsUploadingGallery(true);
+    try {
+      const uploaded = await Promise.all(
+        valid.map((f) => uploadAPI.uploadProductImage(f).then((r) => r.data.data.url as string))
+      );
+      setFormData((prev) => ({ ...prev, images: [...prev.images, ...uploaded] }));
+      toast.success(`${uploaded.length} gambar berhasil diupload`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Gagal mengupload gambar');
+    } finally {
+      setIsUploadingGallery(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveGalleryImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const validate = () => {
@@ -454,6 +496,57 @@ export default function AdminCreateProductPage() {
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
+            </Card>
+
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900">Galeri Gambar</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Tambahkan beberapa foto produk dari berbagai sudut</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  disabled={isUploadingGallery}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
+                >
+                  {isUploadingGallery ? <Loader size="sm" /> : <Upload className="w-3.5 h-3.5" />}
+                  Tambah Gambar
+                </button>
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  multiple
+                  onChange={(e) => e.target.files && handleGalleryUpload(e.target.files)}
+                  className="hidden"
+                />
+              </div>
+
+              {formData.images.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+                  <ImageIcon className="w-8 h-8 mx-auto text-gray-300 mb-2" />
+                  <p className="text-xs text-gray-500">Belum ada gambar tambahan</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-3">
+                  {formData.images.map((url, idx) => (
+                    <div
+                      key={url + idx}
+                      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group"
+                    >
+                      <Image src={url} alt={`Gallery ${idx + 1}`} fill className="object-cover" unoptimized />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGalleryImage(idx)}
+                        className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
 

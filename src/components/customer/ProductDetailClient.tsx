@@ -5,7 +5,7 @@ import { productsAPI } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -75,6 +75,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
@@ -129,6 +130,21 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const subtotal = finalPrice * quantity;
   const isOutOfStock = !product.is_available || product.stock === 0;
 
+  const galleryImages: string[] = [
+    product.image_url,
+    ...(Array.isArray(product.images) ? product.images : []),
+  ].filter(Boolean);
+  const displayedImage = activeImage || galleryImages[0] || null;
+  const currentIndex = displayedImage ? galleryImages.indexOf(displayedImage) : -1;
+  const hasMultiple = galleryImages.length > 1;
+
+  const goToImage = (index: number) => {
+    if (!galleryImages.length) return;
+    const next = (index + galleryImages.length) % galleryImages.length;
+    setActiveImage(galleryImages[next]);
+    setImageError(false);
+  };
+
   return (
     <main className="bg-white min-h-screen pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -157,31 +173,81 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
         {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image */}
-          <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-            {product.image_url && !imageError ? (
-              <Image
-                src={product.image_url}
-                alt={product.name}
-                fill
-                className="object-cover"
-                priority
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-6xl">✨</span>
-              </div>
-            )}
+          <div>
+            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
+              {displayedImage && !imageError ? (
+                <Image
+                  src={displayedImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-6xl">✨</span>
+                </div>
+              )}
 
-            {hasDiscount && (
-              <span className="absolute top-4 left-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded">
-                -{discountPercentage}%
-              </span>
-            )}
+              {hasDiscount && (
+                <span className="absolute top-4 left-4 px-3 py-1 bg-red-500 text-white text-sm font-medium rounded">
+                  -{discountPercentage}%
+                </span>
+              )}
 
-            {isOutOfStock && (
-              <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                <span className="text-lg font-medium text-gray-500">Stok Habis</span>
+              {hasMultiple && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => goToImage(currentIndex - 1)}
+                    aria-label="Gambar sebelumnya"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md cursor-pointer"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToImage(currentIndex + 1)}
+                    aria-label="Gambar berikutnya"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md cursor-pointer"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  <span className="absolute bottom-3 right-3 px-2 py-1 text-xs font-medium bg-black/60 text-white rounded">
+                    {currentIndex + 1} / {galleryImages.length}
+                  </span>
+                </>
+              )}
+
+              {isOutOfStock && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <span className="text-lg font-medium text-gray-500">Stok Habis</span>
+                </div>
+              )}
+            </div>
+
+            {galleryImages.length > 1 && (
+              <div className="mt-3 grid grid-cols-5 gap-2">
+                {galleryImages.map((url, idx) => {
+                  const isActive = displayedImage === url;
+                  return (
+                    <button
+                      key={url + idx}
+                      type="button"
+                      onClick={() => {
+                        setActiveImage(url);
+                        setImageError(false);
+                      }}
+                      className={`relative aspect-square bg-gray-100 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${
+                        isActive ? 'border-pink-500' : 'border-transparent hover:border-gray-300'
+                      }`}
+                      aria-label={`Lihat gambar ${idx + 1}`}
+                    >
+                      <Image src={url} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
