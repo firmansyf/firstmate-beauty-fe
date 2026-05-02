@@ -224,9 +224,16 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             {product.description && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Deskripsi</h3>
-                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                  {product.description}
-                </div>
+                {/<[a-z][\s\S]*>/i.test(product.description) ? (
+                  <div
+                    className="rich-text-content text-sm text-gray-600 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                    {product.description}
+                  </div>
+                )}
               </div>
             )}
 

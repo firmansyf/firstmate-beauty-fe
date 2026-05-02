@@ -1,8 +1,13 @@
 // src/components/common/Footer.tsx
+'use client';
+
+import FeedbackModal from '@/components/customer/FeedbackModal';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   return (
     <footer className="bg-white border-t border-gray-100">
@@ -33,16 +38,28 @@ export default function Footer() {
             >
               Pesanan
             </Link>
+            
+              <button
+                onClick={() => setIsFeedbackOpen(true)}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-pink-600 transition-colors cursor-pointer"
+              >
+                Report
+              </button>
+            
           </div>
         </div>
 
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-500 text-center">
-            &copy; {currentYear} Al-fath Skin. All rights reserved.
+            &copy; {currentYear} FirstMate Beauty. All rights reserved.
           </p>
         </div>
       </div>
+
+      
+        <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+      
     </footer>
   );
 }

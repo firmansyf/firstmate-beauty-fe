@@ -3,6 +3,7 @@
 
 import Card from '@/components/common/Card';
 import Loader from '@/components/common/Loader';
+import RichTextEditor from '@/components/common/RichTextEditor';
 import { productsAPI, uploadAPI } from '@/lib/api';
 import { ChevronLeft, ImageIcon, Upload, X } from 'lucide-react';
 import Image from 'next/image';
@@ -224,12 +225,10 @@ export default function AdminCreateProductPage() {
                   <label className="block text-sm font-medium text-gray-900 mb-1.5">
                     Deskripsi
                   </label>
-                  <textarea
+                  <RichTextEditor
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
+                    onChange={(value) => setFormData({ ...formData, description: value })}
                     placeholder="Deskripsikan produk, kandungan, manfaat, cara penggunaan..."
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 resize-none"
                   />
                 </div>
 

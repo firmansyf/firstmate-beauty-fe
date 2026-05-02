@@ -122,14 +122,14 @@ export default function AdminFeedbacksPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            Feedback
+            Report
             {unreadCount > 0 && (
               <span className="px-2 py-0.5 bg-pink-600 text-white text-xs font-medium rounded-full">
                 {unreadCount} baru
               </span>
             )}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">{pagination.totalItems} total feedback</p>
+          <p className="text-sm text-gray-500 mt-1">{pagination.totalItems} total report</p>
         </div>
         {unreadCount > 0 && (
           <button

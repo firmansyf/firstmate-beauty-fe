@@ -283,6 +283,94 @@ button {
   outline-offset: 2px;
 }
 
+/* Rich text content (Tiptap editor + rendered output) */
+.rich-text-content h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0.75rem 0 0.5rem;
+  line-height: 1.4;
+}
+
+.rich-text-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0.625rem 0 0.375rem;
+  line-height: 1.4;
+}
+
+.rich-text-content p {
+  margin: 0.375rem 0;
+  line-height: 1.6;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.rich-text-content ul {
+  list-style-type: disc;
+}
+
+.rich-text-content ol {
+  list-style-type: decimal;
+}
+
+.rich-text-content li {
+  margin: 0.125rem 0;
+  line-height: 1.6;
+}
+
+.rich-text-content li > p {
+  margin: 0;
+}
+
+.rich-text-content blockquote {
+  border-left: 3px solid #ec4899;
+  padding-left: 0.875rem;
+  margin: 0.5rem 0;
+  color: #4b5563;
+  font-style: italic;
+}
+
+.rich-text-content a {
+  color: #db2777;
+  text-decoration: underline;
+}
+
+.rich-text-content strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.rich-text-content em {
+  font-style: italic;
+}
+
+.rich-text-content s {
+  text-decoration: line-through;
+}
+
+.rich-text-content code {
+  background: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Tiptap placeholder */
+.rich-text-content p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 /* Page Transitions */
 .page-enter {
   opacity: 0;

@@ -70,7 +70,7 @@ export default function Sidebar() {
     },
     {
       href: '/admin/feedbacks',
-      label: 'Feedback',
+      label: 'Report',
       icon: MessageSquare,
     },
   ];
