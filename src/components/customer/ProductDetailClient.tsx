@@ -195,7 +195,10 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             Produk
           </Link>
           <span className="text-gray-300 shrink-0">/</span>
-          <span className="text-gray-900 truncate min-w-0 flex-1" title={product.name}>
+          <span
+            className="text-gray-900 truncate min-w-0 max-w-[180px] sm:max-w-xs md:max-w-sm"
+            title={product.name}
+          >
             {product.name}
           </span>
         </nav>
