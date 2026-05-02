@@ -28,6 +28,9 @@ export default function AdminCreateProductPage() {
     unit: 'pcs',
     category_id: '',
     image_url: '',
+    brand: '',
+    masa_penyimpanan: '',
+    jenis_kulit: [] as string[],
     is_available: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -155,6 +158,7 @@ export default function AdminCreateProductPage() {
         discount_price: formData.discount_price ? parseFloat(formData.discount_price) : undefined,
         stock: parseInt(formData.stock),
         category_id: parseInt(formData.category_id),
+        jenis_kulit: formData.jenis_kulit.join(','),
       };
 
       await productsAPI.create(payload);
@@ -303,6 +307,75 @@ export default function AdminCreateProductPage() {
                       <option value="set">Set</option>
                     </select>
                   </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">Detail Produk</h2>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                      Brand
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.brand}
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
+                      placeholder="Contoh: Wardah, Skintific"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                      Masa Penyimpanan
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.masa_penyimpanan}
+                      onChange={(e) => setFormData({ ...formData, masa_penyimpanan: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
+                      placeholder="Contoh: 12 bulan setelah dibuka"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                    Jenis Kulit
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Normal', 'Kering', 'Berminyak', 'Kombinasi', 'Sensitif', 'Berjerawat'].map((tipe) => {
+                      const checked = formData.jenis_kulit.includes(tipe);
+                      return (
+                        <label
+                          key={tipe}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full cursor-pointer transition-colors ${
+                            checked
+                              ? 'bg-pink-50 border-pink-400 text-pink-700'
+                              : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...formData.jenis_kulit, tipe]
+                                : formData.jenis_kulit.filter((t) => t !== tipe);
+                              setFormData({ ...formData, jenis_kulit: next });
+                            }}
+                            className="hidden"
+                          />
+                          {tipe}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Pilih satu atau lebih jenis kulit yang cocok</p>
                 </div>
               </div>
             </Card>

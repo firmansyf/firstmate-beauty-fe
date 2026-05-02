@@ -188,9 +188,17 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
           {/* Info */}
           <div>
-            {product.category_name && (
-              <span className="text-sm text-gray-500">{product.category_name}</span>
-            )}
+            <div className="flex items-center gap-2 text-sm">
+              {product.category_name && (
+                <span className="text-gray-500">{product.category_name}</span>
+              )}
+              {product.category_name && product.brand && (
+                <span className="text-gray-300">•</span>
+              )}
+              {product.brand && (
+                <span className="text-pink-600 font-medium">{product.brand}</span>
+              )}
+            </div>
 
             <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mt-1 mb-4">
               {product.name}
@@ -219,7 +227,37 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               <p className="text-sm text-gray-500">
                 Satuan: <span className="text-gray-900 font-medium">{product.unit}</span>
               </p>
+              {product.brand && (
+                <p className="text-sm text-gray-500">
+                  Brand: <span className="text-gray-900 font-medium">{product.brand}</span>
+                </p>
+              )}
+              {product.masa_penyimpanan && (
+                <p className="text-sm text-gray-500">
+                  Masa Penyimpanan: <span className="text-gray-900 font-medium">{product.masa_penyimpanan}</span>
+                </p>
+              )}
             </div>
+
+            {product.jenis_kulit && (
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Cocok untuk Jenis Kulit</h3>
+                <div className="flex flex-wrap gap-2">
+                  {String(product.jenis_kulit)
+                    .split(',')
+                    .map((s: string) => s.trim())
+                    .filter(Boolean)
+                    .map((tipe: string) => (
+                      <span
+                        key={tipe}
+                        className="px-3 py-1 text-xs bg-pink-50 text-pink-700 border border-pink-100 rounded-full"
+                      >
+                        {tipe}
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
 
             {product.description && (
               <div className="mb-6">
