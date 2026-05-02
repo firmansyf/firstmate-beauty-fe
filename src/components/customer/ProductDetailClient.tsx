@@ -401,7 +401,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             {variants.length > 0 && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Varian
+                  Variant
                   {selectedVariant && (
                     <span className="text-gray-500 font-normal ml-2">{selectedVariant.name}</span>
                   )}
