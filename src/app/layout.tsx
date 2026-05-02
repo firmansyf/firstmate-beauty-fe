@@ -8,7 +8,7 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin-production.up.railway.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://first-mate-beauty-production.up.railway.app';
 const ogImage = `${siteUrl}/logo.png`;
 
 export const metadata: Metadata = {
@@ -41,14 +41,14 @@ export const metadata: Metadata = {
     images: [
       {
         url: ogImage,
-        width: 323,
-        height: 225,
+        width: 480,
+        height: 510,
         alt: 'FirstMate Beauty',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'FirstMate Beauty - Jual Beli Produk Skincare Online',
     description: 'Platform jual-beli skincare terpercaya dengan kualitas terbaik dan harga terjangkau.',
     images: [ogImage],

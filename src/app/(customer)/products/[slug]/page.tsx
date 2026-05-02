@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://first-mate-beauty-production.up.railway.app';
 
   const jsonLd = product
     ? {

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://alfath-skin.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://first-mate-beauty-production.up.railway.app';
 
 async function getProducts() {
   try {
