@@ -186,16 +186,18 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     <main className="bg-white min-h-screen pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav aria-label="breadcrumb" className="flex items-center gap-2 text-sm mb-6">
-          <Link href="/" className="text-gray-500 hover:text-gray-900 transition-colors">
+        <nav aria-label="breadcrumb" className="flex items-center gap-2 text-sm mb-6 min-w-0">
+          <Link href="/" className="text-gray-500 hover:text-gray-900 transition-colors shrink-0">
             Beranda
           </Link>
-          <span className="text-gray-300">/</span>
-          <Link href="/products" className="text-gray-500 hover:text-gray-900 transition-colors">
+          <span className="text-gray-300 shrink-0">/</span>
+          <Link href="/products" className="text-gray-500 hover:text-gray-900 transition-colors shrink-0">
             Produk
           </Link>
-          <span className="text-gray-300">/</span>
-          <span className="text-gray-900">{product.name}</span>
+          <span className="text-gray-300 shrink-0">/</span>
+          <span className="text-gray-900 truncate min-w-0 flex-1" title={product.name}>
+            {product.name}
+          </span>
         </nav>
 
         {/* Back */}
@@ -303,7 +305,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               )}
             </div>
 
-            <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mt-1 mb-4">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mt-1 mb-4 leading-snug break-words">
               {product.name}
             </h1>
 
