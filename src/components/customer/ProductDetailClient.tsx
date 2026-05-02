@@ -210,9 +210,9 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
         </button>
 
         {/* Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Image */}
-          <div>
+          <div className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
               {displayedImage && !imageError ? (
                 <Image
@@ -267,7 +267,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             </div>
 
             {galleryImages.length > 1 && (
-              <div className="mt-3 grid grid-cols-5 gap-2">
+              <div className="mt-3 flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {galleryImages.map((url, idx) => {
                   const isActive = displayedImage === url;
                   return (
@@ -278,12 +278,12 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                         setActiveImage(url);
                         setImageError(false);
                       }}
-                      className={`relative aspect-square bg-gray-100 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${
+                      className={`relative w-20 h-20 flex-shrink-0 snap-start bg-gray-100 rounded-md overflow-hidden border-2 transition-colors cursor-pointer ${
                         isActive ? 'border-pink-500' : 'border-transparent hover:border-gray-300'
                       }`}
                       aria-label={`Lihat gambar ${idx + 1}`}
                     >
-                      <Image src={url} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                      <Image src={url} alt={`${product.name} ${idx + 1}`} fill className="object-cover" sizes="80px" />
                     </button>
                   );
                 })}
