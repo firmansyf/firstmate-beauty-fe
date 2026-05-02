@@ -78,6 +78,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProduct();
@@ -86,7 +87,14 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const fetchProduct = async () => {
     try {
       const response = await productsAPI.getBySlug(slug);
-      setProduct(response.data.data);
+      const data = response.data.data;
+      setProduct(data);
+      const variants = Array.isArray(data?.variants) ? data.variants : [];
+      if (variants.length > 0) {
+        // Default to first in-stock variant, fallback to first variant
+        const inStock = variants.find((v: any) => Number(v.stock) > 0);
+        setSelectedVariantId((inStock || variants[0]).id);
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
       toast.error('Produk tidak ditemukan');
@@ -96,19 +104,38 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     }
   };
 
+  const variants: any[] = Array.isArray(product?.variants) ? product.variants : [];
+  const selectedVariant = variants.find((v: any) => v.id === selectedVariantId) || null;
+  const effectiveStock = selectedVariant
+    ? Number(selectedVariant.stock)
+    : Number(product?.stock || 0);
+
+  // Reset quantity when variant changes or stock shrinks
+  useEffect(() => {
+    if (quantity > effectiveStock) {
+      setQuantity(Math.max(1, effectiveStock || 1));
+    }
+  }, [effectiveStock]);
+
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
+    if (newQuantity >= 1 && newQuantity <= effectiveStock) {
       setQuantity(newQuantity);
     }
   };
 
   const handleAddToCart = async () => {
+    if (variants.length > 0 && !selectedVariantId) {
+      toast.error('Silakan pilih varian terlebih dahulu');
+      return;
+    }
     setIsAddingToCart(true);
     try {
-      await addToCart(product.id, quantity);
+      await addToCart(product.id, quantity, { variantId: selectedVariantId });
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Gagal menambahkan ke keranjang');
     } finally {
       setIsAddingToCart(false);
     }
@@ -122,18 +149,28 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     return null;
   }
 
-  const hasDiscount = product.discount_price && product.discount_price < product.price;
-  const finalPrice = hasDiscount ? product.discount_price : product.price;
+  // Effective price/discount react to selected variant
+  const basePrice = selectedVariant ? Number(selectedVariant.price) : Number(product.price);
+  const baseDiscount = selectedVariant
+    ? selectedVariant.discount_price !== null && selectedVariant.discount_price !== undefined
+      ? Number(selectedVariant.discount_price)
+      : null
+    : product.discount_price !== null && product.discount_price !== undefined
+      ? Number(product.discount_price)
+      : null;
+  const hasDiscount = baseDiscount !== null && baseDiscount < basePrice;
+  const finalPrice = hasDiscount ? baseDiscount! : basePrice;
   const discountPercentage = hasDiscount
-    ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+    ? Math.round(((basePrice - baseDiscount!) / basePrice) * 100)
     : 0;
   const subtotal = finalPrice * quantity;
-  const isOutOfStock = !product.is_available || product.stock === 0;
+  const isOutOfStock = !product.is_available || effectiveStock === 0;
 
   const galleryImages: string[] = [
+    selectedVariant?.image_url,
     product.image_url,
     ...(Array.isArray(product.images) ? product.images : []),
-  ].filter(Boolean);
+  ].filter((v, i, arr) => Boolean(v) && arr.indexOf(v) === i);
   const displayedImage = activeImage || galleryImages[0] || null;
   const currentIndex = displayedImage ? galleryImages.indexOf(displayedImage) : -1;
   const hasMultiple = galleryImages.length > 1;
@@ -288,7 +325,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
             <div className="mb-6 space-y-1">
               <p className="text-sm text-gray-500">
-                Stok: <span className="text-gray-900 font-medium">{product.stock}</span>
+                Stok: <span className="text-gray-900 font-medium">{effectiveStock}</span>
               </p>
               <p className="text-sm text-gray-500">
                 Satuan: <span className="text-gray-900 font-medium">{product.unit}</span>
@@ -355,6 +392,39 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </div>
             )}
 
+            {/* Variants */}
+            {variants.length > 0 && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Varian
+                  {selectedVariant && (
+                    <span className="text-gray-500 font-normal ml-2">{selectedVariant.name}</span>
+                  )}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v: any) => {
+                    const isActive = selectedVariantId === v.id;
+                    const variantOutOfStock = Number(v.stock) === 0;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelectedVariantId(v.id)}
+                        disabled={variantOutOfStock}
+                        className={`px-3 py-2 text-sm border rounded-lg transition-colors cursor-pointer ${
+                          isActive
+                            ? 'border-pink-500 bg-pink-50 text-pink-700'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                        } ${variantOutOfStock ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
+                      >
+                        {v.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Quantity */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -374,18 +444,18 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                     value={quantity}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
-                      if (value >= 1 && value <= product.stock) {
+                      if (value >= 1 && value <= effectiveStock) {
                         setQuantity(value);
                       }
                     }}
                     disabled={isOutOfStock}
                     className="w-12 text-center text-sm font-medium text-gray-900 focus:outline-none"
                     min={1}
-                    max={product.stock}
+                    max={effectiveStock}
                   />
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= product.stock || isOutOfStock}
+                    disabled={quantity >= effectiveStock || isOutOfStock}
                     className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Plus className="w-4 h-4" />

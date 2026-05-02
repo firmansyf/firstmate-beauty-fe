@@ -5,7 +5,7 @@ import Card from '@/components/common/Card';
 import Loader from '@/components/common/Loader';
 import RichTextEditor from '@/components/common/RichTextEditor';
 import { productsAPI, uploadAPI } from '@/lib/api';
-import { ChevronLeft, ImageIcon, Upload, X } from 'lucide-react';
+import { ChevronLeft, ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from 'react';
@@ -40,8 +40,37 @@ export default function AdminEditProductPage() {
     jenis_kulit: [] as string[],
     is_available: true,
     is_featured: false,
+    variants: [] as Array<{
+      id?: number;
+      name: string;
+      price: string;
+      discount_price: string;
+      stock: string;
+      image_url: string;
+    }>,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const addVariant = () => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: [...prev.variants, { name: '', price: '', discount_price: '', stock: '0', image_url: '' }],
+    }));
+  };
+
+  const updateVariant = (index: number, patch: Partial<{ name: string; price: string; discount_price: string; stock: string; image_url: string }>) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v, i) => (i === index ? { ...v, ...patch } : v)),
+    }));
+  };
+
+  const removeVariant = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -80,6 +109,16 @@ export default function AdminEditProductPage() {
           : [],
         is_available: product.is_available ?? true,
         is_featured: product.is_featured ?? false,
+        variants: Array.isArray(product.variants)
+          ? product.variants.map((v: any) => ({
+              id: v.id,
+              name: v.name || '',
+              price: v.price?.toString() ?? '',
+              discount_price: v.discount_price?.toString() ?? '',
+              stock: v.stock?.toString() ?? '0',
+              image_url: v.image_url || '',
+            }))
+          : [],
       });
     } catch (error: any) {
       console.error('Error fetching product:', error);
@@ -240,6 +279,16 @@ export default function AdminEditProductPage() {
         stock: parseInt(formData.stock),
         category_id: parseInt(formData.category_id),
         jenis_kulit: formData.jenis_kulit.join(','),
+        variants: formData.variants
+          .filter((v) => v.name.trim() && v.price !== '')
+          .map((v, idx) => ({
+            name: v.name.trim(),
+            price: parseFloat(v.price),
+            discount_price: v.discount_price ? parseFloat(v.discount_price) : null,
+            stock: parseInt(v.stock || '0'),
+            image_url: v.image_url || null,
+            display_order: idx,
+          })),
       };
 
       await productsAPI.update(productId, payload);
@@ -467,6 +516,98 @@ export default function AdminEditProductPage() {
                   <p className="mt-1 text-xs text-gray-500">Pilih satu atau lebih jenis kulit yang cocok</p>
                 </div>
               </div>
+            </Card>
+
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900">Varian Produk</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Tambah varian (mis. ukuran 30ml / 50ml). Jika ada varian, harga & stok varian akan dipakai saat checkout.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tambah Varian
+                </button>
+              </div>
+
+              {formData.variants.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                  <p className="text-xs text-gray-500">Belum ada varian. Produk akan dijual dengan harga & stok utama.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {formData.variants.map((v, idx) => (
+                    <div key={v.id ?? `new-${idx}`} className="grid grid-cols-12 gap-2 items-start p-3 border border-gray-200 rounded-lg">
+                      <div className="col-span-12 sm:col-span-3">
+                        <label className="block text-xs text-gray-600 mb-1">Nama</label>
+                        <input
+                          type="text"
+                          value={v.name}
+                          onChange={(e) => updateVariant(idx, { name: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="50ml"
+                        />
+                      </div>
+                      <div className="col-span-6 sm:col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Harga</label>
+                        <input
+                          type="number"
+                          value={v.price}
+                          onChange={(e) => updateVariant(idx, { price: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="25000"
+                        />
+                      </div>
+                      <div className="col-span-6 sm:col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Harga Diskon</label>
+                        <input
+                          type="number"
+                          value={v.discount_price}
+                          onChange={(e) => updateVariant(idx, { discount_price: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="opsional"
+                        />
+                      </div>
+                      <div className="col-span-6 sm:col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Stok</label>
+                        <input
+                          type="number"
+                          value={v.stock}
+                          onChange={(e) => updateVariant(idx, { stock: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="col-span-10 sm:col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">URL Gambar</label>
+                        <input
+                          type="url"
+                          value={v.image_url}
+                          onChange={(e) => updateVariant(idx, { image_url: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="opsional"
+                        />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 flex items-end justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(idx)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer mt-5"
+                          aria-label="Hapus varian"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             <Card className="p-5">

@@ -234,6 +234,9 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-gray-900 truncate">{item.product_name}</h3>
+                    {item.variant_name && (
+                      <p className="text-xs text-gray-500">Varian: <span className="text-gray-700 font-medium">{item.variant_name}</span></p>
+                    )}
                     <p className="text-xs text-gray-500">
                       {item.quantity} x {formatCurrency(item.price)}
                     </p>

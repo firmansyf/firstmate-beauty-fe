@@ -349,7 +349,8 @@ export default function CheckoutPage() {
                         className="flex justify-between text-sm"
                       >
                         <span className="text-gray-600">
-                          {item.name} x{item.quantity}
+                          {item.name}
+                          {item.variant_name ? ` - ${item.variant_name}` : ''} x{item.quantity}
                         </span>
                         <span className="text-gray-900">
                           {formatCurrency((item.discount_price || item.price) * item.quantity)}

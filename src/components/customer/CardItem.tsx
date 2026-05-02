@@ -10,6 +10,8 @@ interface CartItemProps {
   item: {
     id: number;
     product_id: number;
+    variant_id?: number | null;
+    variant_name?: string | null;
     name: string;
     price: number;
     discount_price?: number;
@@ -66,6 +68,9 @@ function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
           {item.name}
         </h3>
+        {item.variant_name && (
+          <p className="text-xs text-gray-500 mb-1">Varian: <span className="text-gray-700 font-medium">{item.variant_name}</span></p>
+        )}
 
         <div className="flex items-baseline gap-2 mb-3">
           <span className="text-sm font-semibold text-pink-600">

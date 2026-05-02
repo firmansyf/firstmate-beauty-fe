@@ -32,6 +32,7 @@ interface OrderItem {
   id: number;
   product_name: string;
   product_image?: string;
+  variant_name?: string | null;
   quantity: number;
   price: number;
   subtotal: number;
@@ -330,6 +331,9 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900">{item.product_name}</h3>
+                      {item.variant_name && (
+                        <p className="text-xs text-gray-500 mt-0.5">Varian: <span className="text-gray-700 font-medium">{item.variant_name}</span></p>
+                      )}
                       <p className="text-xs text-gray-500 mt-0.5">
                         {item.quantity} x {formatCurrency(item.price)}
                       </p>

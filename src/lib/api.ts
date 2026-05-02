@@ -142,16 +142,16 @@ export const categoriesAPI = {
 export const cartAPI = {
   get: () =>
     api.get('/cart'),
-  
-  addItem: (data: { product_id: number; quantity: number; notes?: string }) =>
+
+  addItem: (data: { product_id: number; variant_id?: number | null; quantity: number; notes?: string }) =>
     api.post('/cart/items', data),
-  
+
   updateItem: (id: number, data: { quantity?: number; notes?: string }) =>
     api.put(`/cart/items/${id}`, data),
-  
+
   removeItem: (id: number) =>
     api.delete(`/cart/items/${id}`),
-  
+
   clear: () =>
     api.delete('/cart/clear'),
 };

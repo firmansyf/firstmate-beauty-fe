@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 interface CartItem {
   id: number;
   product_id: number;
+  variant_id?: number | null;
+  variant_name?: string | null;
   name: string;
   price: number;
   discount_price?: number;
@@ -20,9 +22,9 @@ interface CartState {
   totalItems: number;
   totalQuantity: number;
   isLoading: boolean;
-  
+
   fetchCart: () => Promise<void>;
-  addToCart: (productId: number, quantity: number, notes?: string) => Promise<void>;
+  addToCart: (productId: number, quantity: number, options?: { variantId?: number | null; notes?: string }) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -53,10 +55,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
-  addToCart: async (productId: number, quantity: number, notes?: string) => {
+  addToCart: async (productId, quantity, options) => {
     set({ isLoading: true });
     try {
-      await cartAPI.addItem({ product_id: productId, quantity, notes });
+      await cartAPI.addItem({
+        product_id: productId,
+        variant_id: options?.variantId ?? null,
+        quantity,
+        notes: options?.notes,
+      });
       await get().fetchCart();
       toast.success('Produk berhasil ditambahkan ke keranjang');
     } catch (error: any) {
