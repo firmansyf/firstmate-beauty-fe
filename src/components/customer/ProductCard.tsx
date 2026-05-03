@@ -56,7 +56,7 @@ function ProductCard({ product }: ProductCardProps) {
           )}
 
           {hasDiscount && (
-            <span className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-xs font-medium rounded">
+            <span className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 bg-red-500 text-white text-[10px] sm:text-xs font-medium rounded">
               Promo
             </span>
           )}
@@ -69,21 +69,23 @@ function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-3">
+        <div className="p-2.5 sm:p-3">
           {product.category_name && (
-            <span className="text-xs text-gray-500">{product.category_name}</span>
+            <span className="block text-[11px] sm:text-xs text-gray-500 truncate">
+              {product.category_name}
+            </span>
           )}
 
-          <h3 className="text-sm font-medium text-gray-900 mt-1 line-clamp-2 group-hover:text-pink-600 transition-colors">
+          <h3 className="text-[13px] sm:text-sm font-medium text-gray-900 mt-1 line-clamp-2 group-hover:text-pink-600 transition-colors">
             {product.name}
           </h3>
 
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-sm font-semibold text-pink-600">
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-[13px] sm:text-sm font-semibold text-pink-600">
               {formatCurrency(finalPrice)}
             </span>
             {hasDiscount && (
-              <span className="text-xs text-gray-400 line-through">
+              <span className="text-[11px] sm:text-xs text-gray-400 line-through">
                 {formatCurrency(product.price)}
               </span>
             )}
