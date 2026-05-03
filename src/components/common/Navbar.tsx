@@ -70,7 +70,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link href="/" className='flex items-start'>
-              <NextImage src="/logo.png" alt="FirstMate Beauty" width={65} height={30} className='object-contain p-1' />
+              <NextImage src="/logo.png" alt="FirstMate Beauty" width={170} height={50} className='object-contain' />
             </Link>
 
             {/* Desktop Nav */}
@@ -181,7 +181,7 @@ export default function Navbar() {
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 flex-shrink-0">
-          <NextImage src="/logo.png" alt="FirstMate Beauty" width={65} height={40} className="object-contain" />
+          <NextImage src="/logo.png" alt="FirstMate Beauty" width={170} height={50} className="object-contain" />
           <button
             onClick={() => setIsDrawerOpen(false)}
             className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

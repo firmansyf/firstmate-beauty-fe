@@ -4,6 +4,7 @@
 import FeedbackModal from '@/components/customer/FeedbackModal';
 import Link from 'next/link';
 import { useState } from 'react';
+import NextImage from 'next/image';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -15,7 +16,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Brand */}
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-pink-600">FirstMate Beauty</span>
+            <NextImage src="/logo.png" alt="FirstMate Beauty" width={200} height={50} className='object-contain' />
           </div>
 
           {/* Links */}
