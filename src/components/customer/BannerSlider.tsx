@@ -50,7 +50,7 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
   const currentBanner = banners[currentIndex];
 
   const BannerContent = () => (
-    <div className="relative w-full aspect-[21/9] sm:aspect-[3/1] lg:aspect-[4/1] bg-gray-100 rounded-xl overflow-hidden">
+    <div className="relative w-full h-[260px] sm:h-[360px] lg:h-[460px] bg-gray-100 rounded-xl overflow-hidden">
       <Image
         src={currentBanner.image_url}
         alt={currentBanner.title}
@@ -83,6 +83,10 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
                 {currentBanner.description}
               </p>
             )}
+            <Link href='/products' className="inline-flex items-center gap-2 mt-3 sm:mt-4 px-4 sm:px-5 py-2 sm:py-2.5 bg-pink-600 hover:bg-pink-700 text-white text-sm sm:text-base font-semibold rounded-full shadow-lg transition-colors">
+              Beli Sekarang
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       )}
@@ -140,14 +144,9 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
     </div>
   );
 
-  // Wrap in link if has link_url
-  if (currentBanner.link_url) {
-    return (
-      <Link href={currentBanner.link_url} className="block">
-        <BannerContent />
-      </Link>
-    );
-  }
-
-  return <BannerContent />;
+  return (
+    <Link href={currentBanner.link_url || '/products'} className="block">
+      <BannerContent />
+    </Link>
+  );
 }
