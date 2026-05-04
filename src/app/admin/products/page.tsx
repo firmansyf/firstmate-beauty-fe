@@ -6,7 +6,7 @@ import EmptyState from '@/components/common/EmptyState';
 import { motion } from 'framer-motion';
 import { productsAPI, categoriesAPI } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Edit, Package, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Eye, Package, Plus, Search, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -304,7 +304,7 @@ export default function AdminProductsPage() {
                     className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 max-w-[260px] sm:max-w-[360px] lg:max-w-[440px]">
                         <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                           {product.image_url ? (
                             <Image
@@ -322,9 +322,9 @@ export default function AdminProductsPage() {
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                          <p className="text-xs text-gray-500 truncate">{product.slug}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate" title={product.name}>{product.name}</p>
+                          <p className="text-xs text-gray-500 truncate" title={product.slug}>{product.slug}</p>
                         </div>
                       </div>
                     </td>
@@ -359,6 +359,13 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/admin/products/${product.id}`}
+                          className="p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                          title="Detail"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
                         <Link
                           href={`/admin/products/${product.id}/edit`}
                           className="p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"

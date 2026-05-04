@@ -34,6 +34,7 @@ export default function AdminCreateProductPage() {
     brand: '',
     masa_penyimpanan: '',
     jenis_kulit: [] as string[],
+    referral_link: '',
     is_available: true,
     variants: [] as Array<{
       name: string;
@@ -229,6 +230,7 @@ export default function AdminCreateProductPage() {
         stock: parseInt(formData.stock),
         category_id: parseInt(formData.category_id),
         jenis_kulit: formData.jenis_kulit.join(','),
+        referral_link: formData.referral_link.trim() || null,
         variants: formData.variants
           .filter((v) => v.name.trim() && v.price !== '')
           .map((v, idx) => ({
@@ -425,10 +427,24 @@ export default function AdminCreateProductPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-1.5">
+                    Link Referral
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.referral_link}
+                    onChange={(e) => setFormData({ ...formData, referral_link: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
+                    placeholder="https://shopee.co.id/... atau https://tokopedia.com/..."
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Opsional. Link affiliate ke marketplace eksternal.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
                     Jenis Kulit
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {['Normal', 'Kering', 'Berminyak', 'Kombinasi', 'Sensitif', 'Berjerawat'].map((tipe) => {
+                    {['Semua Jenis Kulit', 'Normal', 'Kering', 'Berminyak', 'Kombinasi', 'Sensitif', 'Berjerawat'].map((tipe) => {
                       const checked = formData.jenis_kulit.includes(tipe);
                       return (
                         <label
