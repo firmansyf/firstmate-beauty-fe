@@ -12,7 +12,7 @@ import {
   getPaymentStatusColor,
   getPaymentStatusText,
 } from '@/lib/utils';
-import { ChevronLeft, MapPin, MessageSquare, Package, Phone, User } from 'lucide-react';
+import { Check, ChevronLeft, MapPin, MessageSquare, Package, Phone, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -23,6 +23,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [newPaymentStatus, setNewPaymentStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
@@ -81,6 +82,25 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
     }
   };
 
+  const handleVerifyPayment = async (approved: boolean) => {
+    const label = approved ? 'menyetujui (Sudah Dibayar)' : 'menolak';
+    if (!confirm(`Yakin ingin ${label} pembayaran pesanan ini?`)) return;
+
+    setIsVerifying(true);
+    try {
+      await ordersAPI.adminUpdateStatus(order.id, {
+        payment_status: approved ? 'paid' : 'pending',
+        ...(approved ? { status: order.status === 'pending' ? 'confirmed' : order.status } : {}),
+      });
+      toast.success(approved ? 'Pembayaran dikonfirmasi' : 'Pembayaran ditolak');
+      fetchOrder();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Gagal memverifikasi pembayaran');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -102,8 +122,9 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
 
   const paymentStatusOptions = [
     { value: 'pending', label: 'Menunggu Pembayaran' },
+    { value: 'waiting_confirmation', label: 'Menunggu Verifikasi' },
     { value: 'paid', label: 'Sudah Dibayar' },
-    { value: 'failed', label: 'Gagal' },
+    { value: 'expired', label: 'Kedaluwarsa' },
     { value: 'refunded', label: 'Refund' },
   ];
 
@@ -254,6 +275,59 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                 </div>
               ))}
             </div>
+          </Card>
+
+          {/* Payment Proof */}
+          <Card className="p-5">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">Bukti Pembayaran (QRIS)</h2>
+            {order.payment_proof_url ? (
+              <div className="space-y-4">
+                <a
+                  href={order.payment_proof_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative w-48 h-64 bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
+                >
+                  <Image
+                    src={order.payment_proof_url}
+                    alt="Bukti pembayaran"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </a>
+                {order.payment_proof_uploaded_at && (
+                  <p className="text-xs text-gray-500">
+                    Diunggah: {formatDateTime(order.payment_proof_uploaded_at)}
+                  </p>
+                )}
+
+                {order.payment_status !== 'paid' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleVerifyPayment(true)}
+                      disabled={isVerifying}
+                      className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                      <Check className="w-4 h-4" />
+                      Setujui
+                    </button>
+                    <button
+                      onClick={() => handleVerifyPayment(false)}
+                      disabled={isVerifying}
+                      className="flex-1 cursor-pointer flex items-center justify-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                      Tolak
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Customer belum mengunggah bukti pembayaran.
+              </p>
+            )}
           </Card>
 
           {/* Customer Notes */}

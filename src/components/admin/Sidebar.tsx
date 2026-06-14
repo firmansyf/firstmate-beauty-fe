@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Package,
   RotateCcw,
+  Settings,
   ShoppingBag,
   Users,
   X,
@@ -72,6 +73,11 @@ export default function Sidebar() {
       href: '/admin/feedbacks',
       label: 'Report',
       icon: MessageSquare,
+    },
+    {
+      href: '/admin/settings',
+      label: 'Pembayaran',
+      icon: Settings,
     },
   ];
 

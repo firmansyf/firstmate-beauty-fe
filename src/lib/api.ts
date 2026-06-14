@@ -167,6 +167,16 @@ export const uploadAPI = {
     });
   },
 
+  uploadPaymentProof: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/upload/payment-proof', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   deleteProductImage: (filename: string) =>
     api.delete(`/upload/product/${filename}`),
 
@@ -190,6 +200,9 @@ export const ordersAPI = {
   
   cancel: (id: number) =>
     api.post(`/orders/${id}/cancel`),
+
+  uploadPaymentProof: (id: number, data: { payment_proof_url: string }) =>
+    api.post(`/orders/${id}/payment-proof`, data),
 
   // Admin
   adminGetAll: (params?: {
@@ -244,15 +257,14 @@ export const dashboardAPI = {
     api.get('/dashboard/sales-chart'),
 };
 
-export const paymentAPI = {
-  createSnapToken: (orderId: number) =>
-    api.post(`/payment/${orderId}/token`),
+export const settingsAPI = {
+  // Public — get QRIS image for payment
+  getPayment: () =>
+    api.get('/settings/payment'),
 
-  confirmPayment: (orderId: number) =>
-    api.post(`/payment/${orderId}/confirm`),
-
-  checkStatus: (orderId: number) =>
-    api.get(`/payment/${orderId}/check-status`),
+  // Admin — update QRIS image
+  updatePayment: (data: { qris_image_url: string }) =>
+    api.put('/settings/payment', data),
 };
 
 export const refundsAPI = {

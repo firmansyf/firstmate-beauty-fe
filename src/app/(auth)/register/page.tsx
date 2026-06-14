@@ -142,7 +142,7 @@ export default function RegisterPage() {
           {errors.phone ? (
             <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
           ) : (
-            <p className="mt-1 text-xs text-gray-400">Nomor terhubung ke e-wallet untuk refund</p>
+            <p className="mt-1 text-xs text-gray-400">Nomor terhubung ke e-wallet jika ada refund</p>
           )}
         </div>
 

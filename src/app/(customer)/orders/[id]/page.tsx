@@ -3,7 +3,7 @@
 
 import Card from '@/components/common/Card';
 import Loader from '@/components/common/Loader';
-import { ordersAPI, refundsAPI, paymentAPI } from '@/lib/api';
+import { ordersAPI, refundsAPI, settingsAPI, uploadAPI } from '@/lib/api';
 import {
   formatCurrency,
   formatDateTime,
@@ -19,13 +19,15 @@ import {
   MapPin,
   Package,
   Phone,
+  QrCode,
   Truck,
+  Upload,
   XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { use, useEffect, useState } from 'react';
+import { ChangeEvent, use, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface OrderItem {
@@ -51,6 +53,8 @@ interface Order {
   shipping_cost: number;
   total: number;
   customer_notes?: string;
+  payment_proof_url?: string | null;
+  payment_proof_uploaded_at?: string | null;
   created_at: string;
   confirmed_at?: string;
   shipped_at?: string;
@@ -65,7 +69,9 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isPaying, setIsPaying] = useState(false);
+  const [qrisUrl, setQrisUrl] = useState<string | null>(null);
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const proofInputRef = useRef<HTMLInputElement>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [ewalletPhone, setEwalletPhone] = useState('');
@@ -73,6 +79,10 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
 
   useEffect(() => {
     fetchOrder();
+    settingsAPI
+      .getPayment()
+      .then((res) => setQrisUrl(res.data.data?.qris_image_url || null))
+      .catch(() => setQrisUrl(null));
   }, [id]);
 
   const fetchOrder = async () => {
@@ -111,42 +121,40 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
     }
   };
 
-  const canPay = order?.status === 'pending' && order?.payment_status === 'pending';
-  const canCancel = order?.status === 'pending' && order?.payment_status === 'pending';
+  const needsPayment =
+    order?.status !== 'cancelled' &&
+    (order?.payment_status === 'pending' || order?.payment_status === 'waiting_confirmation');
+  const canCancel =
+    order?.status === 'pending' &&
+    (order?.payment_status === 'pending' || order?.payment_status === 'waiting_confirmation');
   const canRequestRefund = order?.status === 'shipped' && order?.payment_status === 'paid';
 
-  const handlePayNow = async () => {
-    if (!order) return;
-    setIsPaying(true);
-    try {
-      const tokenResponse = await paymentAPI.createSnapToken(order.id);
-      const snapToken = tokenResponse.data.data.snap_token;
+  const handleProofUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !order) return;
 
-      window.snap.pay(snapToken, {
-        onSuccess: async () => {
-          toast.success('Pembayaran berhasil!');
-          setOrder((prev) => prev ? { ...prev, payment_status: 'paid' } : prev);
-          try {
-            await paymentAPI.confirmPayment(order.id);
-          } catch {}
-          fetchOrder();
-        },
-        onPending: () => {
-          toast('Pembayaran pending, cek status pesanan Anda', { icon: '⏳' });
-          fetchOrder();
-        },
-        onError: () => {
-          toast.error('Pembayaran gagal, silakan coba lagi');
-        },
-        onClose: () => {
-          toast('Pembayaran ditutup', { icon: 'ℹ️' });
-        },
-      });
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Hanya file gambar yang diperbolehkan (JPEG, PNG, GIF, WebP)');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran file maksimal 5MB');
+      return;
+    }
+
+    setIsUploadingProof(true);
+    try {
+      const uploadRes = await uploadAPI.uploadPaymentProof(file);
+      const url = uploadRes.data.data.url;
+      await ordersAPI.uploadPaymentProof(order.id, { payment_proof_url: url });
+      toast.success('Bukti pembayaran terkirim. Menunggu verifikasi admin.');
+      fetchOrder();
     } catch (error: any) {
-      const msg = error.response?.data?.detail || error.response?.data?.message || 'Gagal membuka halaman pembayaran';
-      toast.error(msg);
+      toast.error(error.response?.data?.message || 'Gagal mengirim bukti pembayaran');
     } finally {
-      setIsPaying(false);
+      setIsUploadingProof(false);
+      if (proofInputRef.current) proofInputRef.current.value = '';
     }
   };
 
@@ -290,6 +298,105 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-4">
+            {/* QRIS Payment */}
+            {needsPayment && (
+              <Card className="p-5 border-pink-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <QrCode className="w-5 h-5 text-pink-600" />
+                  <h2 className="text-sm font-semibold text-gray-900">Pembayaran QRIS</h2>
+                </div>
+
+                {order.payment_status === 'waiting_confirmation' ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                      <p className="text-sm font-medium text-blue-800">
+                        Bukti pembayaran sedang diverifikasi admin
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Kami akan memproses pesanan Anda setelah pembayaran dikonfirmasi.
+                      </p>
+                    </div>
+                    {order.payment_proof_url && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-2">Bukti yang Anda unggah:</p>
+                        <div className="relative w-40 h-52 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                          <Image
+                            src={order.payment_proof_url}
+                            alt="Bukti pembayaran"
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => proofInputRef.current?.click()}
+                      disabled={isUploadingProof}
+                      className="text-sm text-pink-600 hover:text-pink-700 font-medium disabled:opacity-50"
+                    >
+                      {isUploadingProof ? 'Mengunggah...' : 'Ganti bukti pembayaran'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Scan kode QRIS di bawah dengan aplikasi e-wallet / m-banking Anda, lalu bayar
+                      sejumlah <span className="font-semibold text-pink-600">{formatCurrency(order.total)}</span>.
+                    </p>
+
+                    <div className="flex justify-center">
+                      {qrisUrl ? (
+                        <div className="relative w-64 h-64 bg-white rounded-lg overflow-hidden border border-gray-200">
+                          <Image src={qrisUrl} alt="QRIS" fill className="object-contain p-2" unoptimized />
+                        </div>
+                      ) : (
+                        <div className="w-64 h-64 flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center px-4">
+                          <QrCode className="w-10 h-10 text-gray-300 mb-2" />
+                          <p className="text-xs text-gray-400">
+                            QRIS belum tersedia. Silakan hubungi admin.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-pink-50 border border-pink-100 rounded-lg p-3">
+                      <p className="text-xs text-gray-600">
+                        Setelah membayar, unggah bukti pembayaran (screenshot) agar pesanan Anda
+                        diproses oleh admin.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => proofInputRef.current?.click()}
+                      disabled={isUploadingProof}
+                      className="w-full cursor-pointer flex items-center justify-center gap-2 px-4 py-2.5 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isUploadingProof ? (
+                        <>
+                          <Loader size="sm" />
+                          Mengunggah...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Unggah Bukti Pembayaran
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                <input
+                  ref={proofInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleProofUpload}
+                  className="hidden"
+                />
+              </Card>
+            )}
+
             {/* Status Timeline */}
             <Card className="p-5">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Status Pesanan</h2>
@@ -420,19 +527,10 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             </Card>
 
             {/* Actions */}
-            {(canPay || canCancel || canRequestRefund) && (
+            {(canCancel || canRequestRefund) && (
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Aksi</h3>
                 <div className="space-y-2">
-                  {canPay && (
-                    <button
-                      onClick={handlePayNow}
-                      disabled={isPaying}
-                      className="w-full cursor-pointer px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
-                    >
-                      {isPaying ? 'Memuat...' : 'Bayar Sekarang'}
-                    </button>
-                  )}
                   {canCancel && (
                     <>
                       <button

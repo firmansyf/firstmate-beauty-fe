@@ -68,6 +68,7 @@ export function getOrderStatusColor(status: string): string {
 export function getPaymentStatusColor(status: string): string {
   const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
+    waiting_confirmation: 'bg-blue-100 text-blue-800',
     paid: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
     refunded: 'bg-gray-100 text-gray-800',
@@ -91,6 +92,7 @@ export function getOrderStatusText(status: string): string {
 export function getPaymentStatusText(status: string): string {
   const texts: Record<string, string> = {
     pending: 'Menunggu Pembayaran',
+    waiting_confirmation: 'Menunggu Verifikasi',
     paid: 'Sudah Dibayar',
     failed: 'Gagal',
     refunded: 'Dikembalikan',

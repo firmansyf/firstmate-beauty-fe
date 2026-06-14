@@ -2,7 +2,7 @@
 'use client';
 
 import Loader from '@/components/common/Loader';
-import { ordersAPI, paymentAPI } from '@/lib/api';
+import { ordersAPI } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
@@ -107,29 +107,10 @@ export default function CheckoutPage() {
       const orderId = response.data.data.id;
       await clearCart();
 
-      // Get Midtrans Snap token and open payment popup
-      const tokenResponse = await paymentAPI.createSnapToken(orderId);
-      const snapToken = tokenResponse.data.data.snap_token;
-
-      window.snap.pay(snapToken, {
-        onSuccess: async () => {
-          toast.success('Pembayaran berhasil!');
-          try { await paymentAPI.confirmPayment(orderId); } catch {}
-          router.push(`/orders/${orderId}`);
-        },
-        onPending: () => {
-          toast('Pembayaran pending, cek status pesanan Anda', { icon: '⏳' });
-          router.push(`/orders/${orderId}`);
-        },
-        onError: () => {
-          toast.error('Pembayaran gagal, silakan coba lagi');
-          router.push(`/orders/${orderId}`);
-        },
-        onClose: () => {
-          toast('Pembayaran dibatalkan', { icon: 'ℹ️' });
-          router.push(`/orders/${orderId}`);
-        },
-      });
+      // Manual QRIS: redirect to the order page where the customer scans the
+      // QRIS, pays, and uploads the payment proof for admin verification.
+      toast.success('Pesanan dibuat! Silakan lakukan pembayaran via QRIS.');
+      router.push(`/orders/${orderId}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Gagal membuat pesanan');
     } finally {
