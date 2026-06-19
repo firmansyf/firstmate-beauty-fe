@@ -12,6 +12,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Select, { SingleValue, StylesConfig } from 'react-select';
+
+const WILAYAH_API = `${process.env.NEXT_PUBLIC_API_URL}/wilayah`;
+
+interface Region {
+  id: string;
+  name: string;
+  postal_code?: string;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,6 +35,136 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+const selectStyles = (error?: string): StylesConfig<SelectOption, false> => ({
+  control: (base, state) => ({
+    ...base,
+    borderColor: error ? '#ef4444' : state.isFocused ? '#ec4899' : '#e5e7eb',
+    borderRadius: '0.5rem',
+    boxShadow: 'none',
+    fontSize: '0.875rem',
+    minHeight: '38px',
+    backgroundColor: state.isDisabled ? '#f9fafb' : 'white',
+    '&:hover': { borderColor: error ? '#ef4444' : '#ec4899' },
+  }),
+  option: (base, state) => ({
+    ...base,
+    fontSize: '0.875rem',
+    backgroundColor: state.isSelected
+      ? '#ec4899'
+      : state.isFocused
+      ? '#fce7f3'
+      : 'white',
+    color: state.isSelected ? 'white' : '#111827',
+    cursor: 'pointer',
+    '&:active': { backgroundColor: '#f9a8d4' },
+  }),
+  menu: (base) => ({
+    ...base,
+    borderRadius: '0.5rem',
+    border: '1px solid #f3f4f6',
+    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+    zIndex: 50,
+  }),
+  menuList: (base) => ({
+    ...base,
+    padding: '4px',
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: '#9ca3af',
+    fontSize: '0.875rem',
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: '#111827',
+    fontSize: '0.875rem',
+  }),
+  input: (base) => ({
+    ...base,
+    color: '#111827',
+    fontSize: '0.875rem',
+  }),
+  noOptionsMessage: (base) => ({
+    ...base,
+    fontSize: '0.875rem',
+    color: '#6b7280',
+  }),
+  loadingMessage: (base) => ({
+    ...base,
+    fontSize: '0.875rem',
+    color: '#6b7280',
+  }),
+});
+
+function SelectField({
+  label,
+  required,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+  loading,
+  error,
+}: {
+  label: string;
+  required?: boolean;
+  value: string;
+  onChange: (id: string, name: string) => void;
+  options: Region[];
+  placeholder: string;
+  disabled?: boolean;
+  loading?: boolean;
+  error?: string;
+}) {
+  const opts: SelectOption[] = (Array.isArray(options) ? options : []).map((o) => ({
+    value: o.id,
+    label: o.name,
+  }));
+
+  const selected = opts.find((o) => o.value === value) ?? null;
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-900 mb-1.5">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <Select<SelectOption>
+        instanceId={label}
+        value={selected}
+        onChange={(opt: SingleValue<SelectOption>) =>
+          onChange(opt?.value ?? '', opt?.label ?? '')
+        }
+        options={opts}
+        placeholder={placeholder}
+        isDisabled={disabled || loading}
+        isLoading={loading}
+        isSearchable
+        styles={selectStyles(error)}
+        noOptionsMessage={() => 'Tidak ada pilihan'}
+        loadingMessage={() => 'Memuat...'}
+      />
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -6, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -6, height: 0 }}
+            className="mt-1 text-sm text-red-600"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -37,8 +176,34 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     recipient_name: '',
     phone: '',
-    shipping_address: '',
     customer_notes: '',
+  });
+
+  const [address, setAddress] = useState({
+    province_id: '',
+    province_name: '',
+    city_id: '',
+    city_name: '',
+    district_id: '',
+    district_name: '',
+    village_id: '',
+    village_name: '',
+    postal_code: '',
+    detail: '',
+  });
+
+  const [regions, setRegions] = useState<{
+    provinces: Region[];
+    cities: Region[];
+    districts: Region[];
+    villages: Region[];
+  }>({ provinces: [], cities: [], districts: [], villages: [] });
+
+  const [loadingRegion, setLoadingRegion] = useState({
+    provinces: true,
+    cities: false,
+    districts: false,
+    villages: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,14 +213,11 @@ export default function CheckoutPage() {
       router.push('/login');
       return;
     }
-
     const loadData = async () => {
       await fetchCart();
       setIsLoading(false);
     };
-
     loadData();
-
     if (user) {
       setFormData((prev) => ({
         ...prev,
@@ -71,44 +233,122 @@ export default function CheckoutPage() {
     }
   }, [isLoading, items, router]);
 
+  // Load provinces on mount
+  useEffect(() => {
+    fetch(`${WILAYAH_API}/provinces`)
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) throw new Error('invalid response');
+        setRegions((prev) => ({ ...prev, provinces: data as Region[] }));
+      })
+      .catch(() => toast.error('Gagal memuat data provinsi'))
+      .finally(() => setLoadingRegion((prev) => ({ ...prev, provinces: false })));
+  }, []);
+
+  // Load cities when province changes
+  useEffect(() => {
+    if (!address.province_id) return;
+    setLoadingRegion((prev) => ({ ...prev, cities: true }));
+    setRegions((prev) => ({ ...prev, cities: [], districts: [], villages: [] }));
+    setAddress((prev) => ({
+      ...prev,
+      city_id: '', city_name: '',
+      district_id: '', district_name: '',
+      village_id: '', village_name: '',
+      postal_code: '',
+    }));
+    fetch(`${WILAYAH_API}/cities/${address.province_id}`)
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) throw new Error('invalid response');
+        setRegions((prev) => ({ ...prev, cities: data as Region[] }));
+      })
+      .catch(() => toast.error('Gagal memuat data kota/kabupaten'))
+      .finally(() => setLoadingRegion((prev) => ({ ...prev, cities: false })));
+  }, [address.province_id]);
+
+  // Load districts when city changes
+  useEffect(() => {
+    if (!address.city_id) return;
+    setLoadingRegion((prev) => ({ ...prev, districts: true }));
+    setRegions((prev) => ({ ...prev, districts: [], villages: [] }));
+    setAddress((prev) => ({
+      ...prev,
+      district_id: '', district_name: '',
+      village_id: '', village_name: '',
+      postal_code: '',
+    }));
+    fetch(`${WILAYAH_API}/districts/${address.city_id}`)
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) throw new Error('invalid response');
+        setRegions((prev) => ({ ...prev, districts: data as Region[] }));
+      })
+      .catch(() => toast.error('Gagal memuat data kecamatan'))
+      .finally(() => setLoadingRegion((prev) => ({ ...prev, districts: false })));
+  }, [address.city_id]);
+
+  // Load villages when district changes, auto-fill postal code
+  useEffect(() => {
+    if (!address.district_id) return;
+    setLoadingRegion((prev) => ({ ...prev, villages: true }));
+    setRegions((prev) => ({ ...prev, villages: [] }));
+    setAddress((prev) => ({
+      ...prev,
+      village_id: '', village_name: '',
+      postal_code: '',
+    }));
+    fetch(`${WILAYAH_API}/villages/${address.district_id}`)
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) throw new Error('invalid response');
+        setRegions((prev) => ({ ...prev, villages: data as Region[] }));
+      })
+      .catch(() => toast.error('Gagal memuat data desa/kelurahan'))
+      .finally(() => setLoadingRegion((prev) => ({ ...prev, villages: false })));
+  }, [address.district_id]);
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.recipient_name) {
-      newErrors.recipient_name = 'Nama penerima wajib diisi';
-    }
-
+    if (!formData.recipient_name) newErrors.recipient_name = 'Nama penerima wajib diisi';
     if (!formData.phone) {
       newErrors.phone = 'Nomor telepon wajib diisi';
     } else if (!/^[0-9]{10,13}$/.test(formData.phone.replace(/[^0-9]/g, ''))) {
       newErrors.phone = 'Nomor telepon tidak valid';
     }
-
-    if (!formData.shipping_address) {
-      newErrors.shipping_address = 'Alamat wajib diisi';
-    }
-
+    if (!address.province_id) newErrors.province = 'Provinsi wajib dipilih';
+    if (!address.city_id) newErrors.city = 'Kota/Kabupaten wajib dipilih';
+    if (!address.district_id) newErrors.district = 'Kecamatan wajib dipilih';
+    if (!address.village_id) newErrors.village = 'Desa/Kelurahan wajib dipilih';
+    if (!address.detail.trim()) newErrors.detail = 'Alamat detail wajib diisi';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const buildShippingAddress = () => {
+    const parts: string[] = [];
+    if (address.detail.trim()) parts.push(address.detail.trim());
+    if (address.village_name) parts.push(`Kel. ${address.village_name}`);
+    if (address.district_name) parts.push(`Kec. ${address.district_name}`);
+    if (address.city_name) parts.push(address.city_name);
+    if (address.province_name) parts.push(address.province_name);
+    if (address.postal_code) parts.push(address.postal_code);
+    parts.push('Indonesia');
+    return parts.join(', ');
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
-
     setIsSubmitting(true);
     try {
       const response = await ordersAPI.create({
         ...formData,
+        shipping_address: buildShippingAddress(),
         shipping_cost: 10000,
       });
-
       const orderId = response.data.data.id;
       await clearCart();
-
-      // Manual QRIS: redirect to the order page where the customer scans the
-      // QRIS, pays, and uploads the payment proof for admin verification.
       toast.success('Pesanan dibuat! Silakan lakukan pembayaran via QRIS.');
       router.push(`/orders/${orderId}`);
     } catch (error: any) {
@@ -179,6 +419,7 @@ export default function CheckoutPage() {
                 <h2 className="text-sm font-semibold text-gray-900 mb-4">Informasi Pengiriman</h2>
 
                 <div className="space-y-4">
+                  {/* Recipient & Phone */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <motion.div
                       initial={{ opacity: 0, x: -10 }}
@@ -189,7 +430,7 @@ export default function CheckoutPage() {
                         Nama Penerima <span className="text-red-500">*</span>
                       </label>
                       <motion.input
-                        whileFocus={{ scale: 1.01, borderColor: '#10b981' }}
+                        whileFocus={{ scale: 1.01 }}
                         type="text"
                         value={formData.recipient_name}
                         onChange={(e) =>
@@ -203,9 +444,9 @@ export default function CheckoutPage() {
                       <AnimatePresence>
                         {errors.recipient_name && (
                           <motion.p
-                            initial={{ opacity: 0, y: -10, height: 0 }}
+                            initial={{ opacity: 0, y: -6, height: 0 }}
                             animate={{ opacity: 1, y: 0, height: 'auto' }}
-                            exit={{ opacity: 0, y: -10, height: 0 }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
                             className="mt-1 text-sm text-red-600"
                           >
                             {errors.recipient_name}
@@ -223,7 +464,7 @@ export default function CheckoutPage() {
                         No. Telepon <span className="text-red-500">*</span>
                       </label>
                       <motion.input
-                        whileFocus={{ scale: 1.01, borderColor: '#10b981' }}
+                        whileFocus={{ scale: 1.01 }}
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -235,9 +476,9 @@ export default function CheckoutPage() {
                       <AnimatePresence>
                         {errors.phone && (
                           <motion.p
-                            initial={{ opacity: 0, y: -10, height: 0 }}
+                            initial={{ opacity: 0, y: -6, height: 0 }}
                             animate={{ opacity: 1, y: 0, height: 'auto' }}
-                            exit={{ opacity: 0, y: -10, height: 0 }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
                             className="mt-1 text-sm text-red-600"
                           >
                             {errors.phone}
@@ -247,38 +488,138 @@ export default function CheckoutPage() {
                     </motion.div>
                   </div>
 
+                  {/* Address Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
+                    className="space-y-3"
                   >
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">
-                      Alamat Lengkap <span className="text-red-500">*</span>
-                    </label>
-                    <motion.textarea
-                      whileFocus={{ scale: 1.01, borderColor: '#10b981' }}
-                      value={formData.shipping_address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, shipping_address: e.target.value })
-                      }
-                      rows={3}
-                      className={`w-full px-3 py-2 text-sm border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-500 resize-none transition-all ${
-                        errors.shipping_address ? 'border-red-500' : 'border-gray-200'
-                      }`}
-                      placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan, Kota"
-                    />
-                    <AnimatePresence>
-                      {errors.shipping_address && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -10, height: 0 }}
-                          animate={{ opacity: 1, y: 0, height: 'auto' }}
-                          exit={{ opacity: 0, y: -10, height: 0 }}
-                          className="mt-1 text-sm text-red-600"
-                        >
-                          {errors.shipping_address}
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
+                    <p className="text-sm font-medium text-gray-900">
+                      Alamat Pengiriman <span className="text-red-500">*</span>
+                    </p>
+
+                    {/* Country (readonly) */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Negara</label>
+                      <input
+                        type="text"
+                        value="Indonesia"
+                        readOnly
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-500 bg-gray-50 cursor-default focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Province & City */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <SelectField
+                        label="Provinsi"
+                        required
+                        value={address.province_id}
+                        onChange={(id, name) =>
+                          setAddress((prev) => ({ ...prev, province_id: id, province_name: name }))
+                        }
+                        options={regions.provinces}
+                        placeholder="Pilih provinsi"
+                        loading={loadingRegion.provinces}
+                        error={errors.province}
+                      />
+                      <SelectField
+                        label="Kota / Kabupaten"
+                        required
+                        value={address.city_id}
+                        onChange={(id, name) =>
+                          setAddress((prev) => ({ ...prev, city_id: id, city_name: name }))
+                        }
+                        options={regions.cities}
+                        placeholder="Pilih kota/kabupaten"
+                        disabled={!address.province_id}
+                        loading={loadingRegion.cities}
+                        error={errors.city}
+                      />
+                    </div>
+
+                    {/* District & Village */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <SelectField
+                        label="Kecamatan"
+                        required
+                        value={address.district_id}
+                        onChange={(id, name) =>
+                          setAddress((prev) => ({ ...prev, district_id: id, district_name: name }))
+                        }
+                        options={regions.districts}
+                        placeholder="Pilih kecamatan"
+                        disabled={!address.city_id}
+                        loading={loadingRegion.districts}
+                        error={errors.district}
+                      />
+                      <SelectField
+                        label="Desa / Kelurahan"
+                        required
+                        value={address.village_id}
+                        onChange={(id, name) => {
+                          const village = regions.villages.find((v) => v.id === id);
+                          setAddress((prev) => ({
+                            ...prev,
+                            village_id: id,
+                            village_name: name,
+                            postal_code: village?.postal_code ?? prev.postal_code,
+                          }));
+                        }}
+                        options={regions.villages}
+                        placeholder="Pilih desa/kelurahan"
+                        disabled={!address.district_id}
+                        loading={loadingRegion.villages}
+                        error={errors.village}
+                      />
+                    </div>
+
+                    {/* Postal Code */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Kode Pos</label>
+                      <input
+                        type="text"
+                        value={address.postal_code}
+                        onChange={(e) =>
+                          setAddress((prev) => ({ ...prev, postal_code: e.target.value }))
+                        }
+                        maxLength={5}
+                        className="w-full sm:w-40 px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-all"
+                        placeholder="12345"
+                      />
+                    </div>
+
+                    {/* Detail address */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Alamat Detail <span className="text-red-500">*</span>
+                      </label>
+                      <motion.textarea
+                        whileFocus={{ scale: 1.005 }}
+                        value={address.detail}
+                        onChange={(e) =>
+                          setAddress((prev) => ({ ...prev, detail: e.target.value }))
+                        }
+                        rows={2}
+                        className={`w-full px-3 py-2 text-sm border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-500 resize-none transition-all ${
+                          errors.detail ? 'border-red-500' : 'border-gray-200'
+                        }`}
+                        placeholder="Nama jalan, nomor rumah, RT/RW, patokan, dll"
+                      />
+                      <AnimatePresence>
+                        {errors.detail && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -6, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
+                            className="mt-1 text-sm text-red-600"
+                          >
+                            {errors.detail}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </motion.div>
                 </div>
               </motion.div>
@@ -289,9 +630,8 @@ export default function CheckoutPage() {
                 className="bg-white rounded-lg border border-gray-100 p-5"
               >
                 <h2 className="text-sm font-semibold text-gray-900 mb-4">Catatan (Opsional)</h2>
-
                 <motion.textarea
-                  whileFocus={{ scale: 1.01, borderColor: '#10b981' }}
+                  whileFocus={{ scale: 1.005 }}
                   value={formData.customer_notes}
                   onChange={(e) =>
                     setFormData({ ...formData, customer_notes: e.target.value })

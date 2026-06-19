@@ -22,6 +22,7 @@ import {
   QrCode,
   Truck,
   Upload,
+  X,
   XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -70,12 +71,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
   const [qrisUrl, setQrisUrl] = useState<string | null>(null);
+  const [showQrZoom, setShowQrZoom] = useState(false);
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const proofInputRef = useRef<HTMLInputElement>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [ewalletPhone, setEwalletPhone] = useState('');
   const [isRequestingRefund, setIsRequestingRefund] = useState(false);
+  const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
 
   useEffect(() => {
     fetchOrder();
@@ -121,6 +124,25 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
     }
   };
 
+  const handleConfirmReceived = async () => {
+    if (!order) return;
+
+    if (!confirm('Konfirmasi bahwa Anda telah menerima pesanan ini?')) {
+      return;
+    }
+
+    setIsConfirmingReceived(true);
+    try {
+      await ordersAPI.confirmReceived(order.id);
+      toast.success('Terima kasih! Pesanan dikonfirmasi diterima.');
+      fetchOrder();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Gagal mengkonfirmasi pesanan');
+    } finally {
+      setIsConfirmingReceived(false);
+    }
+  };
+
   const needsPayment =
     order?.status !== 'cancelled' &&
     (order?.payment_status === 'pending' || order?.payment_status === 'waiting_confirmation');
@@ -128,6 +150,7 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
     order?.status === 'pending' &&
     (order?.payment_status === 'pending' || order?.payment_status === 'waiting_confirmation');
   const canRequestRefund = order?.status === 'shipped' && order?.payment_status === 'paid';
+  const canConfirmReceived = order?.status === 'shipped';
 
   const handleProofUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -345,11 +368,19 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
                       sejumlah <span className="font-semibold text-pink-600">{formatCurrency(order.total)}</span>.
                     </p>
 
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center">
                       {qrisUrl ? (
-                        <div className="relative w-64 h-64 bg-white rounded-lg overflow-hidden border border-gray-200">
-                          <Image src={qrisUrl} alt="QRIS" fill className="object-contain p-2" unoptimized />
-                        </div>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setShowQrZoom(true)}
+                            className="relative w-64 h-64 bg-white rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            title="Klik untuk memperbesar"
+                          >
+                            <Image src={qrisUrl} alt="QRIS" fill className="object-contain p-2" unoptimized />
+                          </button>
+                          <p className="text-xs text-gray-400 mt-2">Klik kode QRIS untuk memperbesar</p>
+                        </>
                       ) : (
                         <div className="w-64 h-64 flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center px-4">
                           <QrCode className="w-10 h-10 text-gray-300 mb-2" />
@@ -527,10 +558,25 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             </Card>
 
             {/* Actions */}
-            {(canCancel || canRequestRefund) && (
+            {(canCancel || canRequestRefund || canConfirmReceived) && (
               <Card className="p-5">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Aksi</h3>
                 <div className="space-y-2">
+                  {canConfirmReceived && (
+                    <>
+                      <button
+                        onClick={handleConfirmReceived}
+                        disabled={isConfirmingReceived}
+                        className="w-full cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {isConfirmingReceived ? 'Memproses...' : 'Pesanan Diterima'}
+                      </button>
+                      <p className="text-xs text-gray-500 text-center">
+                        Tekan jika pesanan sudah Anda terima
+                      </p>
+                    </>
+                  )}
                   {canCancel && (
                     <>
                       <button
@@ -643,6 +689,29 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* QRIS Zoom Lightbox */}
+      {showQrZoom && qrisUrl && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 cursor-zoom-out"
+          onClick={() => setShowQrZoom(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setShowQrZoom(false)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            aria-label="Tutup"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div
+            className="relative w-full max-w-2xl aspect-square max-h-[90vh] bg-white rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image src={qrisUrl} alt="QRIS" fill className="object-contain p-4" unoptimized />
+          </div>
         </div>
       )}
     </main>

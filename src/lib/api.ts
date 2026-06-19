@@ -201,6 +201,9 @@ export const ordersAPI = {
   cancel: (id: number) =>
     api.post(`/orders/${id}/cancel`),
 
+  confirmReceived: (id: number) =>
+    api.post(`/orders/${id}/received`),
+
   uploadPaymentProof: (id: number, data: { payment_proof_url: string }) =>
     api.post(`/orders/${id}/payment-proof`, data),
 
