@@ -70,7 +70,7 @@ export const authAPI = {
   forgotPassword: (data: { email: string }) =>
     api.post('/auth/forgot-password', data),
 
-  resetPassword: (data: { email: string; newPassword: string }) =>
+  resetPassword: (data: { email: string; otp: string; newPassword: string }) =>
     api.post('/auth/reset-password', data),
 };
 

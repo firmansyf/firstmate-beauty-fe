@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import DOMPurify from 'isomorphic-dompurify';
 
 const ProductDetailSkeleton = () => (
   <main className="bg-white min-h-screen pb-8">
@@ -376,7 +377,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 {/<[a-z][\s\S]*>/i.test(product.description) ? (
                   <div
                     className="rich-text-content text-sm text-gray-600 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
                   />
                 ) : (
                   <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
