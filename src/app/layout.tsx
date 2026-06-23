@@ -7,7 +7,7 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://first-mate-beauty-production.up.railway.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://firstmatebeauties.com/" ;
 const ogImage = `${siteUrl}/logo.png`;
 
 export const metadata: Metadata = {
@@ -53,8 +53,9 @@ export const metadata: Metadata = {
     images: [ogImage],
   },
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: [{ url: '/logoPav.png', type: 'image/png' }],
+    shortcut: '/logoPav.png',
+    apple: '/logoPav.png',
   },
   alternates: {
     canonical: siteUrl,
