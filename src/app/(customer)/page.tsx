@@ -1,53 +1,48 @@
-// src/app/(customer)/page.tsx
-'use client';
-
 import BannerSlider from '@/components/customer/BannerSlider';
 import ProductCard from '@/components/customer/ProductCard';
-import { bannersAPI, productsAPI } from '@/lib/api';
-import { ArrowRight, Sparkles, Heart } from 'lucide-react';
+import { ArrowRight, Heart, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
-export default function HomePage() {
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  const [banners, setBanners] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+async function getFeaturedProducts() {
+  try {
+    const res = await fetch(`${apiUrl}/products?limit=8`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
 
-  const fetchData = async () => {
-    try {
-      const [productsRes, bannersRes] = await Promise.all([
-        productsAPI.getAll({ limit: 8 }),
-        bannersAPI.getActive(),
-      ]);
-      setFeaturedProducts(productsRes.data.data);
-      setBanners(bannersRes.data.data || []);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+async function getActiveBanners() {
+  try {
+    const res = await fetch(`${apiUrl}/banners`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const [featuredProducts, banners] = await Promise.all([
+    getFeaturedProducts(),
+    getActiveBanners(),
+  ]);
 
   return (
     <main className="bg-white">
       {/* Hero Banner Section */}
       <section className="pt-6 pb-8 bg-gradient-to-b from-pink-50 to-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <div className="relative w-full aspect-[21/9] sm:aspect-[3/1] lg:aspect-[4/1] bg-gray-200 rounded-xl overflow-hidden animate-pulse">
-              <div className="absolute inset-0 flex items-center p-6 sm:p-8 lg:p-12">
-                <div className="max-w-2xl space-y-4">
-                  <div className="h-8 sm:h-10 md:h-12 bg-gray-300 rounded-lg w-3/4"></div>
-                  <div className="h-4 sm:h-5 bg-gray-300 rounded w-2/3"></div>
-                  <div className="h-10 bg-gray-300 rounded-lg w-32 mt-4"></div>
-                </div>
-              </div>
-            </div>
-          ) : banners.length > 0 ? (
+          {banners.length > 0 ? (
             <BannerSlider banners={banners} />
           ) : (
             <div className="relative w-full min-h-[320px] sm:min-h-[360px] lg:min-h-[400px] rounded-2xl overflow-hidden">
@@ -56,7 +51,7 @@ export default function HomePage() {
               <div
                 className="absolute inset-0 opacity-[0.08]"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E")`,
                 }}
               />
 
@@ -123,21 +118,16 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {isLoading ? (
+          {featuredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-gray-200 aspect-square rounded-lg mb-3"></div>
-                  <div className="bg-gray-200 h-4 rounded w-3/4 mb-2"></div>
-                  <div className="bg-gray-200 h-4 rounded w-1/2"></div>
-                </div>
+              {featuredProducts.map((product: any) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+            <div className="text-center py-20">
+              <span className="text-5xl mb-4 block">✨</span>
+              <p className="text-gray-500">Belum ada produk tersedia</p>
             </div>
           )}
         </div>
