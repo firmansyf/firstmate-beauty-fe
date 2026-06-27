@@ -3,7 +3,7 @@
 import ProductCard from '@/components/customer/ProductCard';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 interface Product {
   id: number;
@@ -53,17 +53,21 @@ export default function ProductsClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchInput, setSearchInput] = useState(currentFilters.search || '');
+  const activePillRef = useRef<HTMLButtonElement>(null);
 
   const currentCategory = currentFilters.category || '';
   const currentSort = `${currentFilters.sortBy || 'created_at'}-${currentFilters.order || 'DESC'}`;
   const currentPage = initialPagination.currentPage;
 
-  // Sync search input when navigating directly to a URL with search params
   useEffect(() => {
     setSearchInput(currentFilters.search || '');
   }, [currentFilters.search]);
 
-  // Debounce search — only push to URL 600ms after user stops typing
+  // Scroll active category pill into view on mount
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [currentCategory]);
+
   useEffect(() => {
     const trimmed = searchInput.trim();
     if (trimmed === (currentFilters.search || '')) return;
@@ -113,26 +117,86 @@ export default function ProductsClient({
     });
   };
 
+  const SortSelect = ({ className = '' }: { className?: string }) => (
+    <select
+      value={currentSort}
+      onChange={(e) => handleSortChange(e.target.value)}
+      className={`px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 transition-colors cursor-pointer bg-white ${className}`}
+    >
+      <option value="created_at-DESC">Terbaru</option>
+      <option value="price-ASC">Harga Terendah</option>
+      <option value="price-DESC">Harga Tertinggi</option>
+      <option value="name-ASC">Nama (A-Z)</option>
+    </select>
+  );
+
   return (
     <main className="bg-white min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-5 lg:mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Produk</h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Temukan produk skincare terbaik untuk kulit Anda
           </p>
         </div>
 
+        {/* ── MOBILE FILTERS (hidden on lg+) ── */}
+        <div className="lg:hidden space-y-3 mb-5">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Cari produk skincare..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-colors"
+            />
+          </div>
+
+          {/* Category pills — horizontal scroll */}
+          <div
+            className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-0.5"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <button
+              ref={!currentCategory ? activePillRef : undefined}
+              onClick={() => handleCategoryChange('')}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                !currentCategory
+                  ? 'bg-pink-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Semua
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                ref={currentCategory === cat.slug ? activePillRef : undefined}
+                onClick={() => handleCategoryChange(cat.slug)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                  currentCategory === cat.slug
+                    ? 'bg-pink-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── MAIN LAYOUT ── */}
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters */}
-          <aside className="lg:w-56 flex-shrink-0">
+
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block lg:w-56 flex-shrink-0">
             <div className="sticky top-20 space-y-6">
-              {/* Search */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cari
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cari</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -145,11 +209,8 @@ export default function ProductsClient({
                 </div>
               </div>
 
-              {/* Categories */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
                 <div className="space-y-1">
                   <button
                     onClick={() => handleCategoryChange('')}
@@ -161,55 +222,50 @@ export default function ProductsClient({
                   >
                     Semua
                   </button>
-                  {categories.map((category) => (
+                  {categories.map((cat) => (
                     <button
-                      key={category.id}
-                      onClick={() => handleCategoryChange(category.slug)}
+                      key={cat.id}
+                      onClick={() => handleCategoryChange(cat.slug)}
                       className={`w-full cursor-pointer text-left px-3 py-2 text-sm rounded-lg transition-colors ${
-                        currentCategory === category.slug
+                        currentCategory === cat.slug
                           ? 'bg-pink-50 text-pink-700 font-medium'
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      {category.name}
+                      {cat.name}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Sort */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Urutkan
-                </label>
-                <select
-                  value={currentSort}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 transition-colors cursor-pointer"
-                >
-                  <option value="created_at-DESC">Terbaru</option>
-                  <option value="price-ASC">Harga Terendah</option>
-                  <option value="price-DESC">Harga Tertinggi</option>
-                  <option value="name-ASC">Nama (A-Z)</option>
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Urutkan</label>
+                <SortSelect className="w-full" />
               </div>
             </div>
           </aside>
 
-          {/* Products */}
+          {/* Products Area */}
           <div className="flex-1">
-            <p className="text-sm text-gray-500 mb-4">
-              {initialPagination.totalItems} produk ditemukan
-            </p>
+            {/* Count + mobile sort row */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500">
+                <span className="font-medium text-gray-700">{initialPagination.totalItems}</span> produk ditemukan
+              </p>
+              {/* Sort — mobile only */}
+              <div className="lg:hidden">
+                <SortSelect />
+              </div>
+            </div>
 
             <div
               className={`transition-opacity duration-200 ${
-                isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'
+                isPending ? 'opacity-40 pointer-events-none' : 'opacity-100'
               }`}
             >
               {initialProducts.length > 0 ? (
                 <div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8">
                     {initialProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
