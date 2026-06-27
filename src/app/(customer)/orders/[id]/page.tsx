@@ -16,6 +16,7 @@ import {
   CheckCircle,
   ChevronLeft,
   Clock,
+  Download,
   MapPin,
   Package,
   Phone,
@@ -79,6 +80,26 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
   const [ewalletPhone, setEwalletPhone] = useState('');
   const [isRequestingRefund, setIsRequestingRefund] = useState(false);
   const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
+  const [isDownloadingQris, setIsDownloadingQris] = useState(false);
+
+  const handleDownloadQris = async () => {
+    if (!qrisUrl) return;
+    setIsDownloadingQris(true);
+    try {
+      const res = await fetch(qrisUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'qris-firstmate-beauty.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Gagal mengunduh QRIS');
+    } finally {
+      setIsDownloadingQris(false);
+    }
+  };
 
   useEffect(() => {
     fetchOrder();
@@ -380,6 +401,15 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
                             <Image src={qrisUrl} alt="QRIS" fill className="object-contain p-2" unoptimized />
                           </button>
                           <p className="text-xs text-gray-400 mt-2">Klik kode QRIS untuk memperbesar</p>
+                          <button
+                            type="button"
+                            onClick={handleDownloadQris}
+                            disabled={isDownloadingQris}
+                            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-600 border border-pink-200 rounded-lg hover:bg-pink-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            {isDownloadingQris ? 'Mengunduh...' : 'Unduh QRIS'}
+                          </button>
                         </>
                       ) : (
                         <div className="w-64 h-64 flex flex-col items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center px-4">
@@ -705,6 +735,15 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             aria-label="Tutup"
           >
             <X className="w-6 h-6" />
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadQris}
+            disabled={isDownloadingQris}
+            className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer text-sm font-medium disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" />
+            {isDownloadingQris ? 'Mengunduh...' : 'Unduh QRIS'}
           </button>
           <div
             className="relative w-full max-w-2xl aspect-square max-h-[90vh] bg-white rounded-xl overflow-hidden"
