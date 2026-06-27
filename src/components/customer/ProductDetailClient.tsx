@@ -183,8 +183,116 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     setImageError(false);
   };
 
+  const VariantSelector = () =>
+    variants.length > 0 ? (
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
+          Varian
+          {selectedVariant && (
+            <span className="text-gray-500 font-normal ml-2">{selectedVariant.name}</span>
+          )}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {variants.map((v: any) => {
+            const isActive = selectedVariantId === v.id;
+            const variantOutOfStock = Number(v.stock) === 0;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setSelectedVariantId(v.id)}
+                disabled={variantOutOfStock}
+                className={`px-3 py-2 text-sm border rounded-lg transition-colors cursor-pointer ${
+                  isActive
+                    ? 'border-pink-500 bg-pink-50 text-pink-700'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                } ${variantOutOfStock ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
+              >
+                {v.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
+
+  const QuantityStepper = () => (
+    <div className="mb-5">
+      <label className="block text-sm font-medium text-gray-900 mb-2">Jumlah</label>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+          <button
+            onClick={() => handleQuantityChange(-1)}
+            disabled={quantity <= 1 || isOutOfStock}
+            className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (value >= 1 && value <= effectiveStock) setQuantity(value);
+            }}
+            disabled={isOutOfStock}
+            className="w-12 text-center text-sm font-medium text-gray-900 focus:outline-none"
+            min={1}
+            max={effectiveStock}
+          />
+          <button
+            onClick={() => handleQuantityChange(1)}
+            disabled={quantity >= effectiveStock || isOutOfStock}
+            className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const AddToCartButton = ({ className = '' }: { className?: string }) => (
+    <button
+      onClick={handleAddToCart}
+      disabled={isOutOfStock || isAddingToCart}
+      className={`cursor-pointer flex items-center justify-center gap-2 px-6 py-3 bg-pink-600 text-white text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pink-700 active:scale-95 transition-all ${className}`}
+    >
+      <AnimatePresence mode="wait">
+        {isAddingToCart ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"
+          />
+        ) : addedToCart ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Check className="w-4 h-4" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="cart"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ShoppingBag className="w-4 h-4" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {isOutOfStock ? 'Stok Habis' : addedToCart ? 'Ditambahkan!' : 'Tambah ke Keranjang'}
+    </button>
+  );
+
   return (
-    <main className="bg-white min-h-screen pb-8">
+    <main className="bg-white min-h-screen pb-24 lg:pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav aria-label="breadcrumb" className="flex items-center gap-2 text-sm mb-6 min-w-0">
@@ -316,7 +424,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               {product.name}
             </h1>
 
-            <div className="mb-6 pb-6 border-b border-gray-100">
+            <div className="mb-4 pb-4 border-b border-gray-100">
               <div className="flex items-baseline gap-3">
                 <span className="text-2xl font-semibold text-pink-600">
                   {formatCurrency(finalPrice)}
@@ -330,6 +438,12 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               {product.unit && (
                 <p className="text-sm text-gray-500 mt-1">per {product.unit}</p>
               )}
+            </div>
+
+            {/* Variants + Quantity — mobile only (shown right under title/price) */}
+            <div className="lg:hidden">
+              <VariantSelector />
+              <QuantityStepper />
             </div>
 
             <div className="mb-6 space-y-1">
@@ -401,120 +515,19 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </div>
             )}
 
-            {/* Variants */}
-            {variants.length > 0 && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Variant
-                  {selectedVariant && (
-                    <span className="text-gray-500 font-normal ml-2">{selectedVariant.name}</span>
-                  )}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {variants.map((v: any) => {
-                    const isActive = selectedVariantId === v.id;
-                    const variantOutOfStock = Number(v.stock) === 0;
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedVariantId(v.id)}
-                        disabled={variantOutOfStock}
-                        className={`px-3 py-2 text-sm border rounded-lg transition-colors cursor-pointer ${
-                          isActive
-                            ? 'border-pink-500 bg-pink-50 text-pink-700'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                        } ${variantOutOfStock ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
-                      >
-                        {v.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Quantity */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Jumlah
-              </label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1 || isOutOfStock}
-                    className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      if (value >= 1 && value <= effectiveStock) {
-                        setQuantity(value);
-                      }
-                    }}
-                    disabled={isOutOfStock}
-                    className="w-12 text-center text-sm font-medium text-gray-900 focus:outline-none"
-                    min={1}
-                    max={effectiveStock}
-                  />
-                  <button
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= effectiveStock || isOutOfStock}
-                    className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Subtotal</p>
-                  <p className="font-semibold text-gray-900">{formatCurrency(subtotal)}</p>
-                </div>
-              </div>
+            {/* Variants — desktop only (mobile version is above the details) */}
+            <div className="hidden lg:block">
+              <VariantSelector />
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock || isAddingToCart}
-                className="flex-1 cursor-pointer flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 bg-gray-100 text-black text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
-              >
-                <AnimatePresence mode="wait">
-                  {isAddingToCart ? (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin"
-                    />
-                  ) : addedToCart ? (
-                    <motion.div
-                      key="success"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <Check className="w-4 h-4" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="cart"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                {addedToCart ? 'Ditambahkan!' : 'Tambah ke Keranjang'}
-              </button>
+            {/* Quantity — desktop only */}
+            <div className="hidden lg:block">
+              <QuantityStepper />
+            </div>
+
+            {/* Add to Cart — desktop only (mobile uses fixed bottom bar) */}
+            <div className="hidden lg:block">
+              <AddToCartButton className="w-full" />
             </div>
           </div>
         </div>
@@ -523,6 +536,11 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
       {/* Related Products */}
       <div className="border-t border-gray-100 mt-8">
         <RelatedProducts currentSlug={slug} />
+      </div>
+
+      {/* Fixed bottom bar — mobile only */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-4 py-3">
+        <AddToCartButton className="w-full" />
       </div>
     </main>
   );
