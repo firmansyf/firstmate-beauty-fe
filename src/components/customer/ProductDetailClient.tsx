@@ -69,6 +69,83 @@ const ProductDetailSkeleton = () => (
   </main>
 );
 
+const COLLAPSED_HEIGHT = 160;
+
+function DescriptionCard({
+  description,
+  expanded,
+  onToggle,
+}: {
+  description: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const isHtml = /<[a-z][\s\S]*>/i.test(description);
+  const plainLength = description.replace(/<[^>]*>/g, '').length;
+  const isLong = plainLength > 300;
+
+  return (
+    <div className="mb-6 rounded-2xl border border-gray-100 overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-3.5 bg-gray-50/60 border-b border-gray-100 flex items-center gap-2.5">
+        <div className="w-1 h-4 rounded-full bg-pink-500 shrink-0" />
+        <h3 className="text-sm font-semibold text-gray-900">Deskripsi Produk</h3>
+      </div>
+
+      {/* Content */}
+      <div className="relative bg-white px-5 pt-4">
+        <motion.div
+          initial={false}
+          animate={{ height: isLong && !expanded ? COLLAPSED_HEIGHT : 'auto' }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="overflow-hidden"
+        >
+          {isHtml ? (
+            <div
+              className="rich-text-content text-sm text-gray-600 leading-relaxed pb-4"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description) }}
+            />
+          ) : (
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line pb-4">
+              {description}
+            </p>
+          )}
+        </motion.div>
+
+        {/* Fade gradient when collapsed */}
+        <AnimatePresence>
+          {isLong && !expanded && (
+            <motion.div
+              key="fade"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Toggle */}
+      {isLong && (
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-pink-600 hover:text-pink-700 active:bg-pink-50 border-t border-gray-100 bg-white transition-colors"
+        >
+          <span>{expanded ? 'Sembunyikan' : 'Baca Selengkapnya'}</span>
+          <motion.div
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </motion.div>
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function ProductDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
   const { addToCart } = useCartStore();
@@ -499,60 +576,13 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </div>
             )}
 
-            {product.description && (() => {
-              const isHtml = /<[a-z][\s\S]*>/i.test(product.description);
-              const plainLength = product.description.replace(/<[^>]*>/g, '').length;
-              const isLong = plainLength > 300;
-
-              return (
-                <div className="mb-6 rounded-2xl border border-gray-100 overflow-hidden">
-                  {/* Header */}
-                  <div className="px-5 py-3.5 bg-gray-50/60 border-b border-gray-100 flex items-center gap-2.5">
-                    <div className="w-1 h-4 rounded-full bg-pink-500 shrink-0" />
-                    <h3 className="text-sm font-semibold text-gray-900">Deskripsi Produk</h3>
-                  </div>
-
-                  {/* Content */}
-                  <div className="relative bg-white px-5 py-4">
-                    <div
-                      className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                        !descExpanded && isLong ? 'max-h-40' : 'max-h-[2000px]'
-                      }`}
-                    >
-                      {isHtml ? (
-                        <div
-                          className="rich-text-content text-sm text-gray-600 leading-relaxed"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
-                        />
-                      ) : (
-                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                          {product.description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Fade gradient when collapsed */}
-                    {!descExpanded && isLong && (
-                      <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-                    )}
-                  </div>
-
-                  {/* Toggle */}
-                  {isLong && (
-                    <button
-                      onClick={() => setDescExpanded(!descExpanded)}
-                      className="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-pink-600 hover:text-pink-700 hover:bg-pink-50 border-t border-gray-100 bg-white transition-colors"
-                    >
-                      {descExpanded ? (
-                        <><span>Sembunyikan</span><ChevronUp className="w-3.5 h-3.5" /></>
-                      ) : (
-                        <><span>Baca Selengkapnya</span><ChevronDown className="w-3.5 h-3.5" /></>
-                      )}
-                    </button>
-                  )}
-                </div>
-              );
-            })()}
+            {product.description && (
+              <DescriptionCard
+                description={product.description}
+                expanded={descExpanded}
+                onToggle={() => setDescExpanded(v => !v)}
+              />
+            )}
 
             {/* Variants — desktop only (mobile version is above the details) */}
             <div className="hidden lg:block">

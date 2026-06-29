@@ -53,7 +53,6 @@ export const metadata: Metadata = {
     images: [ogImage],
   },
   icons: {
-    icon: [{ url: '/logoPav.png', type: 'image/png' }],
     shortcut: '/logoPav.png',
     apple: '/logoPav.png',
   },
