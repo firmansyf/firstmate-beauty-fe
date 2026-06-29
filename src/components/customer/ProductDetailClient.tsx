@@ -248,6 +248,12 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             <Plus className="w-4 h-4" />
           </button>
         </div>
+        {quantity > 1 && (
+          <div>
+            <p className="text-xs text-gray-400">Subtotal</p>
+            <p className="text-sm font-semibold text-pink-600">{formatCurrency(subtotal)}</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -431,9 +437,16 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 </span>
                 {hasDiscount && (
                   <span className="text-lg text-gray-400 line-through">
-                    {formatCurrency(product.price)}
+                    {formatCurrency(basePrice)}
                   </span>
                 )}
+
+                {/* {hasDiscount && (
+                  <span className="text-sm font-medium text-red-500">
+                    -{discountPercentage}%
+                  </span>
+                )} */}
+                
               </div>
               {product.unit && (
                 <p className="text-sm text-gray-500 mt-1">per {product.unit}</p>
