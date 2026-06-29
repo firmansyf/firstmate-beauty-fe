@@ -5,7 +5,7 @@ import { productsAPI } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { formatCurrency } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Minus, Plus, ShoppingBag, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -80,6 +80,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -498,35 +499,60 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </div>
             )}
 
-            {product.description && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Deskripsi</h3>
-                {/<[a-z][\s\S]*>/i.test(product.description) ? (
-                  <div
-                    className="rich-text-content text-sm text-gray-600 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
-                  />
-                ) : (
-                  <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                    {product.description}
+            {product.description && (() => {
+              const isHtml = /<[a-z][\s\S]*>/i.test(product.description);
+              const plainLength = product.description.replace(/<[^>]*>/g, '').length;
+              const isLong = plainLength > 300;
+
+              return (
+                <div className="mb-6 rounded-2xl border border-gray-100 overflow-hidden">
+                  {/* Header */}
+                  <div className="px-5 py-3.5 bg-gray-50/60 border-b border-gray-100 flex items-center gap-2.5">
+                    <div className="w-1 h-4 rounded-full bg-pink-500 shrink-0" />
+                    <h3 className="text-sm font-semibold text-gray-900">Deskripsi Produk</h3>
                   </div>
-                )}
-              </div>
-            )}
 
-            {product.description && /kandungan|ingredients|komposisi/i.test(product.description) && (
-              <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-900 mb-1">Kandungan Utama</h3>
-                <p className="text-xs text-gray-500">Lihat deskripsi produk untuk detail lengkap kandungan.</p>
-              </div>
-            )}
+                  {/* Content */}
+                  <div className="relative bg-white px-5 py-4">
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        !descExpanded && isLong ? 'max-h-40' : 'max-h-[2000px]'
+                      }`}
+                    >
+                      {isHtml ? (
+                        <div
+                          className="rich-text-content text-sm text-gray-600 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+                        />
+                      ) : (
+                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                          {product.description}
+                        </p>
+                      )}
+                    </div>
 
-            {product.description && /cara penggunaan|cara pakai|how to use|petunjuk/i.test(product.description) && (
-              <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-900 mb-1">Cara Penggunaan</h3>
-                <p className="text-xs text-gray-500">Lihat deskripsi produk untuk petunjuk penggunaan.</p>
-              </div>
-            )}
+                    {/* Fade gradient when collapsed */}
+                    {!descExpanded && isLong && (
+                      <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    )}
+                  </div>
+
+                  {/* Toggle */}
+                  {isLong && (
+                    <button
+                      onClick={() => setDescExpanded(!descExpanded)}
+                      className="w-full flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-pink-600 hover:text-pink-700 hover:bg-pink-50 border-t border-gray-100 bg-white transition-colors"
+                    >
+                      {descExpanded ? (
+                        <><span>Sembunyikan</span><ChevronUp className="w-3.5 h-3.5" /></>
+                      ) : (
+                        <><span>Baca Selengkapnya</span><ChevronDown className="w-3.5 h-3.5" /></>
+                      )}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Variants — desktop only (mobile version is above the details) */}
             <div className="hidden lg:block">
