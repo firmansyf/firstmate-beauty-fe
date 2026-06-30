@@ -20,6 +20,7 @@ interface AuthState {
   isAuthenticated: boolean;
 
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<void>;
   logout: (reason?: 'manual' | 'expired') => void;
   checkAuth: () => boolean;
@@ -32,6 +33,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loginAt: null,
   isLoading: false,
   isAuthenticated: false,
+
+  loginWithGoogle: async (accessToken: string) => {
+    set({ isLoading: true });
+    try {
+      const response = await authAPI.googleLogin({ access_token: accessToken });
+      const { user, token } = response.data.data;
+      const loginAt = Date.now();
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('loginAt', loginAt.toString());
+
+      set({ user, token, loginAt, isAuthenticated: true, isLoading: false });
+    } catch (error: any) {
+      set({ isLoading: false });
+      throw new Error(error.response?.data?.message || 'Login dengan Google gagal');
+    }
+  },
 
   login: async (email: string, password: string) => {
     set({ isLoading: true });

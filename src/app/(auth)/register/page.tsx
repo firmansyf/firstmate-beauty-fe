@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import toast from 'react-hot-toast';
+import GoogleLoginButton from '@/components/common/GoogleLoginButton';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -217,6 +218,19 @@ export default function RegisterPage() {
           )}
         </button>
       </form>
+
+      {/* Divider */}
+      <div className="relative my-5">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-3 text-xs text-gray-400">atau daftar dengan</span>
+        </div>
+      </div>
+
+      {/* Google Login */}
+      <GoogleLoginButton />
 
       {/* Footer */}
       <p className="text-center text-sm text-gray-500 mt-6">

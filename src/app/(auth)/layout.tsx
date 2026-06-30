@@ -6,6 +6,7 @@ import NextImage from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export default function AuthLayout({
   children,
@@ -21,7 +22,9 @@ export default function AuthLayout({
     }
   }, [isAuthenticated, router]);
 
-  return (
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  const content = (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
@@ -40,5 +43,13 @@ export default function AuthLayout({
         </p>
       </div>
     </div>
+  );
+
+  if (!googleClientId) return content;
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      {content}
+    </GoogleOAuthProvider>
   );
 }
