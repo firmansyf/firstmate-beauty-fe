@@ -20,6 +20,9 @@ export default function AdminCreateProductPage() {
   const [isDragging, setIsDragging] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const variantFileInputRef = useRef<HTMLInputElement>(null);
+  const [variantUploadingIdx, setVariantUploadingIdx] = useState<number | null>(null);
+  const pendingVariantIdx = useRef<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -65,6 +68,40 @@ export default function AdminCreateProductPage() {
       ...prev,
       variants: prev.variants.filter((_, i) => i !== index),
     }));
+  };
+
+  const triggerVariantFileUpload = (idx: number) => {
+    pendingVariantIdx.current = idx;
+    variantFileInputRef.current?.click();
+  };
+
+  const handleVariantFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const idx = pendingVariantIdx.current;
+    if (!file || idx === null) return;
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Hanya file gambar yang diperbolehkan (JPEG, PNG, GIF, WebP)');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran file maksimal 5MB');
+      return;
+    }
+
+    setVariantUploadingIdx(idx);
+    try {
+      const response = await uploadAPI.uploadProductImage(file);
+      updateVariant(idx, { image_url: response.data.data.url });
+      toast.success('Gambar varian berhasil diupload');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Gagal mengupload gambar');
+    } finally {
+      setVariantUploadingIdx(null);
+      pendingVariantIdx.current = null;
+      if (variantFileInputRef.current) variantFileInputRef.current.value = '';
+    }
   };
 
   useEffect(() => {
@@ -542,17 +579,7 @@ export default function AdminCreateProductPage() {
                           placeholder="0"
                         />
                       </div>
-                      <div className="col-span-10 sm:col-span-2">
-                        <label className="block text-xs text-gray-600 mb-1">URL Gambar</label>
-                        <input
-                          type="url"
-                          value={v.image_url}
-                          onChange={(e) => updateVariant(idx, { image_url: e.target.value })}
-                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
-                          placeholder="opsional"
-                        />
-                      </div>
-                      <div className="col-span-2 sm:col-span-1 flex items-end justify-end">
+                      <div className="col-span-2 sm:col-span-3 flex items-end justify-end">
                         <button
                           type="button"
                           onClick={() => removeVariant(idx)}
@@ -561,6 +588,52 @@ export default function AdminCreateProductPage() {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+                      </div>
+
+                      {/* Gambar Varian — full width row */}
+                      <div className="col-span-12">
+                        <label className="block text-xs text-gray-600 mb-1">Gambar Varian</label>
+                        <div className="flex items-center gap-2">
+                          {v.image_url ? (
+                            <div className="relative w-10 h-10 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
+                              <Image src={v.image_url} alt={v.name || `varian ${idx + 1}`} fill className="object-cover" unoptimized sizes="40px" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 flex-shrink-0 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center">
+                              <ImageIcon className="w-4 h-4 text-gray-300" />
+                            </div>
+                          )}
+                          <input
+                            type="url"
+                            value={v.image_url}
+                            onChange={(e) => updateVariant(idx, { image_url: e.target.value })}
+                            className="flex-1 px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                            placeholder="URL gambar (opsional)"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => triggerVariantFileUpload(idx)}
+                            disabled={variantUploadingIdx === idx}
+                            className="flex-shrink-0 flex items-center gap-1 px-2 py-1.5 text-xs border border-gray-200 rounded hover:bg-gray-50 cursor-pointer disabled:opacity-50 transition-colors"
+                          >
+                            {variantUploadingIdx === idx ? (
+                              <Loader size="sm" />
+                            ) : (
+                              <Upload className="w-3.5 h-3.5" />
+                            )}
+                            Upload
+                          </button>
+                          {v.image_url && (
+                            <button
+                              type="button"
+                              onClick={() => updateVariant(idx, { image_url: '' })}
+                              className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 rounded transition-colors cursor-pointer"
+                              aria-label="Hapus gambar"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -665,6 +738,14 @@ export default function AdminCreateProductPage() {
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                   multiple
                   onChange={(e) => e.target.files && handleGalleryUpload(e.target.files)}
+                  className="hidden"
+                />
+                {/* Shared hidden input for variant image uploads */}
+                <input
+                  ref={variantFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleVariantFileChange}
                   className="hidden"
                 />
               </div>

@@ -278,7 +278,11 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               <button
                 key={v.id}
                 type="button"
-                onClick={() => setSelectedVariantId(v.id)}
+                onClick={() => {
+                  setSelectedVariantId(v.id);
+                  setActiveImage(null);
+                  setImageError(false);
+                }}
                 disabled={variantOutOfStock}
                 className={`px-3 py-2 text-sm border rounded-lg transition-colors cursor-pointer ${
                   isActive

@@ -61,6 +61,8 @@ export default function AdminProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProduct();
@@ -148,11 +150,28 @@ export default function AdminProductDetailPage() {
         {/* Main column */}
         <div className="lg:col-span-2 space-y-4">
           <Card className="p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Gambar Utama</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">
+                Gambar Utama
+                {selectedVariantId && (
+                  <span className="ml-2 text-xs font-normal text-pink-600">
+                    — Varian: {product.variants?.find(v => v.id === selectedVariantId)?.name}
+                  </span>
+                )}
+              </h2>
+              {selectedVariantId && (
+                <button
+                  onClick={() => { setSelectedVariantId(null); setPreviewImage(null); }}
+                  className="text-xs text-gray-500 hover:text-gray-900 underline cursor-pointer"
+                >
+                  Reset ke produk
+                </button>
+              )}
+            </div>
             <div className="relative aspect-video w-full bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-              {product.image_url ? (
+              {(previewImage || product.image_url) ? (
                 <Image
-                  src={product.image_url}
+                  src={previewImage || product.image_url!}
                   alt={product.name}
                   fill
                   className="object-contain"
@@ -197,11 +216,13 @@ export default function AdminProductDetailPage() {
 
           {Array.isArray(product.variants) && product.variants.length > 0 && (
             <Card className="p-5">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Varian ({product.variants.length})</h2>
+              <h2 className="text-sm font-semibold text-gray-900 mb-1">Varian ({product.variants.length})</h2>
+              <p className="text-xs text-gray-400 mb-4">Klik baris untuk preview gambar varian</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-100 text-left text-xs uppercase text-gray-500">
+                      <th className="py-2 pr-3 font-medium w-12">Foto</th>
                       <th className="py-2 pr-3 font-medium">Nama</th>
                       <th className="py-2 pr-3 font-medium">Harga</th>
                       <th className="py-2 pr-3 font-medium">Diskon</th>
@@ -209,16 +230,46 @@ export default function AdminProductDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {product.variants.map((v) => (
-                      <tr key={v.id} className="border-b border-gray-50">
-                        <td className="py-2 pr-3 text-gray-900">{v.name}</td>
-                        <td className="py-2 pr-3 text-gray-700">{formatCurrency(Number(v.price))}</td>
-                        <td className="py-2 pr-3 text-gray-700">
-                          {v.discount_price ? formatCurrency(Number(v.discount_price)) : '-'}
-                        </td>
-                        <td className="py-2 pr-3 text-gray-700">{v.stock}</td>
-                      </tr>
-                    ))}
+                    {product.variants.map((v) => {
+                      const isSelected = selectedVariantId === v.id;
+                      const clickable = Boolean(v.image_url);
+                      return (
+                        <tr
+                          key={v.id}
+                          onClick={() => {
+                            if (!clickable) return;
+                            if (isSelected) {
+                              setSelectedVariantId(null);
+                              setPreviewImage(null);
+                            } else {
+                              setSelectedVariantId(v.id);
+                              setPreviewImage(v.image_url);
+                            }
+                          }}
+                          className={`border-b border-gray-50 transition-colors ${
+                            clickable ? 'cursor-pointer hover:bg-pink-50' : ''
+                          } ${isSelected ? 'bg-pink-50' : ''}`}
+                        >
+                          <td className="py-2 pr-3">
+                            {v.image_url ? (
+                              <div className="relative w-10 h-10 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                                <Image src={v.image_url} alt={v.name} fill className="object-cover" unoptimized sizes="40px" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                <ImageIcon className="w-4 h-4 text-gray-300" />
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2 pr-3 text-gray-900 font-medium">{v.name}</td>
+                          <td className="py-2 pr-3 text-gray-700">{formatCurrency(Number(v.price))}</td>
+                          <td className="py-2 pr-3 text-gray-700">
+                            {v.discount_price ? formatCurrency(Number(v.discount_price)) : '-'}
+                          </td>
+                          <td className="py-2 pr-3 text-gray-700">{v.stock}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
