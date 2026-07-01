@@ -12,7 +12,7 @@ import {
   getPaymentStatusColor,
   getPaymentStatusText,
 } from '@/lib/utils';
-import { Check, ChevronLeft, MapPin, MessageSquare, Package, Phone, User, X } from 'lucide-react';
+import { Check, ChevronLeft, ExternalLink, MapPin, MessageSquare, Package, Phone, Truck, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -27,6 +27,8 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const [newStatus, setNewStatus] = useState('');
   const [newPaymentStatus, setNewPaymentStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingUrl, setTrackingUrl] = useState('');
 
   useEffect(() => {
     fetchOrder();
@@ -39,6 +41,8 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
       setNewStatus(response.data.data.status);
       setNewPaymentStatus(response.data.data.payment_status);
       setAdminNotes(response.data.data.admin_notes || '');
+      setTrackingNumber(response.data.data.tracking_number || '');
+      setTrackingUrl(response.data.data.tracking_url || '');
     } catch {
       toast.error('Pesanan tidak ditemukan');
       router.push('/admin/orders');
@@ -51,8 +55,10 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
     const hasStatusChange = newStatus !== order.status;
     const hasPaymentChange = newPaymentStatus !== order.payment_status;
     const hasNotesChange = adminNotes !== (order.admin_notes || '');
+    const hasTrackingNumberChange = trackingNumber !== (order.tracking_number || '');
+    const hasTrackingUrlChange = trackingUrl !== (order.tracking_url || '');
 
-    if (!hasStatusChange && !hasPaymentChange && !hasNotesChange) {
+    if (!hasStatusChange && !hasPaymentChange && !hasNotesChange && !hasTrackingNumberChange && !hasTrackingUrlChange) {
       toast.error('Tidak ada perubahan');
       return;
     }
@@ -61,6 +67,8 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
     if (hasStatusChange) changes.push(`Status: ${getOrderStatusText(newStatus)}`);
     if (hasPaymentChange) changes.push(`Pembayaran: ${getPaymentStatusText(newPaymentStatus)}`);
     if (hasNotesChange) changes.push('Catatan admin');
+    if (hasTrackingNumberChange) changes.push('No. Resi');
+    if (hasTrackingUrlChange) changes.push('Link Tracker');
 
     if (!confirm(`Yakin ingin mengubah:\n${changes.join('\n')}?`)) {
       return;
@@ -72,6 +80,8 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
         status: newStatus,
         payment_status: newPaymentStatus,
         admin_notes: adminNotes,
+        tracking_number: trackingNumber,
+        tracking_url: trackingUrl,
       });
       toast.success('Pesanan berhasil diupdate');
       fetchOrder();
@@ -221,6 +231,34 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 resize-none"
               />
+            </div>
+
+            {/* Tracking Info */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  No. Resi
+                </label>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Masukkan nomor resi..."
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Link Tracker Resi
+                </label>
+                <input
+                  type="url"
+                  value={trackingUrl}
+                  onChange={(e) => setTrackingUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
+                />
+              </div>
             </div>
 
             <button
@@ -402,6 +440,40 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
               </div>
             </div>
           </Card>
+
+          {/* Tracking Info */}
+          {(order.tracking_number || order.tracking_url) && (
+            <Card className="p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">Info Pengiriman</h2>
+              <div className="space-y-3">
+                {order.tracking_number && (
+                  <div className="flex gap-3">
+                    <Truck className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">No. Resi</p>
+                      <p className="text-sm font-medium text-gray-900 font-mono">{order.tracking_number}</p>
+                    </div>
+                  </div>
+                )}
+                {order.tracking_url && (
+                  <div className="flex gap-3">
+                    <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-gray-500">Link Tracker</p>
+                      <a
+                        href={order.tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-pink-600 hover:underline break-all"
+                      >
+                        {order.tracking_url}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Quick Actions */}
           <Card className="p-5">
