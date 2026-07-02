@@ -44,6 +44,13 @@ interface OrderItem {
   notes?: string;
 }
 
+interface OrderShipment {
+  id: number;
+  product_name?: string | null;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+}
+
 interface Order {
   id: number;
   order_number: string;
@@ -58,8 +65,7 @@ interface Order {
   customer_notes?: string;
   payment_proof_url?: string | null;
   payment_proof_uploaded_at?: string | null;
-  tracking_number?: string | null;
-  tracking_url?: string | null;
+  shipments?: OrderShipment[];
   created_at: string;
   confirmed_at?: string;
   shipped_at?: string;
@@ -480,32 +486,39 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
             </Card>
 
             {/* Tracking Info */}
-            {(order.tracking_number || order.tracking_url) && (
+            {order.shipments && order.shipments.length > 0 && (
               <Card className="p-5 border-blue-100 bg-blue-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Truck className="w-5 h-5 text-blue-600" />
                   <h2 className="text-sm font-semibold text-gray-900">Info Pengiriman</h2>
                 </div>
-                <div className="space-y-3">
-                  {order.tracking_number && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">No. Resi</p>
-                      <p className="text-sm font-semibold text-gray-900 font-mono tracking-wide">
-                        {order.tracking_number}
-                      </p>
+                <div className="space-y-4">
+                  {order.shipments.map((s, idx) => (
+                    <div key={s.id ?? idx} className="space-y-2 pb-4 border-b border-blue-100 last:border-0 last:pb-0">
+                      {s.product_name && (
+                        <p className="text-sm font-medium text-gray-900">{s.product_name}</p>
+                      )}
+                      {s.tracking_number && (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">No. Resi</p>
+                          <p className="text-sm font-semibold text-gray-900 font-mono tracking-wide">
+                            {s.tracking_number}
+                          </p>
+                        </div>
+                      )}
+                      {s.tracking_url && (
+                        <a
+                          href={s.tracking_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Lacak Paket
+                        </a>
+                      )}
                     </div>
-                  )}
-                  {order.tracking_url && (
-                    <a
-                      href={order.tracking_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Lacak Paket
-                    </a>
-                  )}
+                  ))}
                 </div>
               </Card>
             )}

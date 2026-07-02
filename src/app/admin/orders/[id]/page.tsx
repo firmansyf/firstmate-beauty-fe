@@ -12,7 +12,7 @@ import {
   getPaymentStatusColor,
   getPaymentStatusText,
 } from '@/lib/utils';
-import { Check, ChevronLeft, ExternalLink, MapPin, MessageSquare, Package, Phone, Truck, User, X } from 'lucide-react';
+import { Check, ChevronLeft, ExternalLink, MapPin, MessageSquare, Package, Phone, Plus, Trash2, Truck, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -27,12 +27,18 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const [newStatus, setNewStatus] = useState('');
   const [newPaymentStatus, setNewPaymentStatus] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [trackingUrl, setTrackingUrl] = useState('');
+  const [shipments, setShipments] = useState<Array<{ product_name: string; tracking_number: string; tracking_url: string }>>([]);
 
   useEffect(() => {
     fetchOrder();
   }, [params.id]);
+
+  const shipmentsFromOrder = (data: any) =>
+    (data.shipments || []).map((s: any) => ({
+      product_name: s.product_name || '',
+      tracking_number: s.tracking_number || '',
+      tracking_url: s.tracking_url || '',
+    }));
 
   const fetchOrder = async () => {
     try {
@@ -41,8 +47,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
       setNewStatus(response.data.data.status);
       setNewPaymentStatus(response.data.data.payment_status);
       setAdminNotes(response.data.data.admin_notes || '');
-      setTrackingNumber(response.data.data.tracking_number || '');
-      setTrackingUrl(response.data.data.tracking_url || '');
+      setShipments(shipmentsFromOrder(response.data.data));
     } catch {
       toast.error('Pesanan tidak ditemukan');
       router.push('/admin/orders');
@@ -51,14 +56,25 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
     }
   };
 
+  const addShipment = () => {
+    setShipments((prev) => [...prev, { product_name: '', tracking_number: '', tracking_url: '' }]);
+  };
+
+  const updateShipment = (index: number, patch: Partial<{ product_name: string; tracking_number: string; tracking_url: string }>) => {
+    setShipments((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+  };
+
+  const removeShipment = (index: number) => {
+    setShipments((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleUpdateStatus = async () => {
     const hasStatusChange = newStatus !== order.status;
     const hasPaymentChange = newPaymentStatus !== order.payment_status;
     const hasNotesChange = adminNotes !== (order.admin_notes || '');
-    const hasTrackingNumberChange = trackingNumber !== (order.tracking_number || '');
-    const hasTrackingUrlChange = trackingUrl !== (order.tracking_url || '');
+    const hasShipmentsChange = JSON.stringify(shipments) !== JSON.stringify(shipmentsFromOrder(order));
 
-    if (!hasStatusChange && !hasPaymentChange && !hasNotesChange && !hasTrackingNumberChange && !hasTrackingUrlChange) {
+    if (!hasStatusChange && !hasPaymentChange && !hasNotesChange && !hasShipmentsChange) {
       toast.error('Tidak ada perubahan');
       return;
     }
@@ -67,8 +83,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
     if (hasStatusChange) changes.push(`Status: ${getOrderStatusText(newStatus)}`);
     if (hasPaymentChange) changes.push(`Pembayaran: ${getPaymentStatusText(newPaymentStatus)}`);
     if (hasNotesChange) changes.push('Catatan admin');
-    if (hasTrackingNumberChange) changes.push('No. Resi');
-    if (hasTrackingUrlChange) changes.push('Link Tracker');
+    if (hasShipmentsChange) changes.push('Info Resi/Pengiriman');
 
     if (!confirm(`Yakin ingin mengubah:\n${changes.join('\n')}?`)) {
       return;
@@ -80,8 +95,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
         status: newStatus,
         payment_status: newPaymentStatus,
         admin_notes: adminNotes,
-        tracking_number: trackingNumber,
-        tracking_url: trackingUrl,
+        shipments,
       });
       toast.success('Pesanan berhasil diupdate');
       fetchOrder();
@@ -234,31 +248,73 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
             </div>
 
             {/* Tracking Info */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  No. Resi
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-medium text-gray-700">
+                  Info Resi / Pengiriman
                 </label>
-                <input
-                  type="text"
-                  value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
-                  placeholder="Masukkan nomor resi..."
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
-                />
+                <button
+                  type="button"
+                  onClick={addShipment}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tambah Resi
+                </button>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Link Tracker Resi
-                </label>
-                <input
-                  type="url"
-                  value={trackingUrl}
-                  onChange={(e) => setTrackingUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500"
-                />
-              </div>
+
+              {shipments.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                  <p className="text-xs text-gray-500">Belum ada info resi. Klik &quot;Tambah Resi&quot; untuk menambahkan.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {shipments.map((s, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-2 items-start p-3 border border-gray-200 rounded-lg">
+                      <div className="col-span-12 sm:col-span-4">
+                        <label className="block text-xs text-gray-600 mb-1">Nama Produk</label>
+                        <input
+                          type="text"
+                          value={s.product_name}
+                          onChange={(e) => updateShipment(idx, { product_name: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="Nama produk"
+                        />
+                      </div>
+                      <div className="col-span-12 sm:col-span-3">
+                        <label className="block text-xs text-gray-600 mb-1">No. Resi</label>
+                        <input
+                          type="text"
+                          value={s.tracking_number}
+                          onChange={(e) => updateShipment(idx, { tracking_number: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="Nomor resi"
+                        />
+                      </div>
+                      <div className="col-span-10 sm:col-span-4">
+                        <label className="block text-xs text-gray-600 mb-1">Link Tracker Resi</label>
+                        <input
+                          type="url"
+                          value={s.tracking_url}
+                          onChange={(e) => updateShipment(idx, { tracking_url: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-pink-500"
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 flex items-end justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeShipment(idx)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer mt-5"
+                          aria-label="Hapus resi"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
@@ -442,35 +498,42 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
           </Card>
 
           {/* Tracking Info */}
-          {(order.tracking_number || order.tracking_url) && (
+          {order.shipments?.length > 0 && (
             <Card className="p-5">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Info Pengiriman</h2>
-              <div className="space-y-3">
-                {order.tracking_number && (
-                  <div className="flex gap-3">
-                    <Truck className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">No. Resi</p>
-                      <p className="text-sm font-medium text-gray-900 font-mono">{order.tracking_number}</p>
-                    </div>
+              <div className="space-y-4">
+                {order.shipments.map((s: any, idx: number) => (
+                  <div key={s.id ?? idx} className="space-y-2 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                    {s.product_name && (
+                      <p className="text-sm font-medium text-gray-900">{s.product_name}</p>
+                    )}
+                    {s.tracking_number && (
+                      <div className="flex gap-3">
+                        <Truck className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500">No. Resi</p>
+                          <p className="text-sm font-medium text-gray-900 font-mono">{s.tracking_number}</p>
+                        </div>
+                      </div>
+                    )}
+                    {s.tracking_url && (
+                      <div className="flex gap-3">
+                        <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500">Link Tracker</p>
+                          <a
+                            href={s.tracking_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-pink-600 hover:underline break-all"
+                          >
+                            {s.tracking_url}
+                          </a>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-                {order.tracking_url && (
-                  <div className="flex gap-3">
-                    <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-gray-500">Link Tracker</p>
-                      <a
-                        href={order.tracking_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-pink-600 hover:underline break-all"
-                      >
-                        {order.tracking_url}
-                      </a>
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </Card>
           )}

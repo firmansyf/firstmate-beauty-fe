@@ -226,8 +226,7 @@ export const ordersAPI = {
     status?: string;
     payment_status?: string;
     admin_notes?: string;
-    tracking_number?: string;
-    tracking_url?: string;
+    shipments?: Array<{ product_name?: string; tracking_number?: string; tracking_url?: string }>;
   }) => api.put(`/orders/admin/${id}/status`, data),
 };
 
